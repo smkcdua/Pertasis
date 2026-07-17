@@ -1,0 +1,628 @@
+/* ==========================================
+   Fittrack Digital Stylesheet
+   Theme: Modern Dark Sporty Slate
+   ========================================== */
+
+:root {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    --border-color: #475569;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --success: #10b981;
+    --success-hover: #059669;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --accent: #06b6d4;
+    --accent-hover: #0891b2;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    --font-digital: 'Share Tech Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+.logo strong {
+    color: var(--primary);
+}
+
+.icon-sport {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--primary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--text-main);
+    background-color: var(--bg-input);
+}
+
+/* Containers */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    flex: 1;
+    width: 100%;
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 900px) {
+    .grid-layout {
+        grid-template-columns: 1.2fr 1.8fr;
+    }
+}
+
+/* General Card Design */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary);
+    padding-left: 0.5rem;
+}
+
+.card-title-sm {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Forms & Inputs */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+select, input[type="text"] {
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+select:focus, input[type="text"]:focus {
+    border-color: var(--primary);
+}
+
+/* Custom Interactive Radio Tiles */
+.radio-tile-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.radio-tile {
+    position: relative;
+    cursor: pointer;
+    width: 100%;
+}
+
+.radio-tile input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.tile-content {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.tile-content svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--text-muted);
+}
+
+.tile-content span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.radio-tile input[type="radio"]:checked + .tile-content {
+    border-color: var(--primary);
+    background-color: rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.radio-tile input[type="radio"]:checked + .tile-content svg {
+    color: var(--primary);
+}
+
+/* Recorded Result Summary Card inside Form */
+.recorded-box {
+    background-color: rgba(6, 182, 212, 0.08);
+    border: 1px dashed var(--accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.recorded-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+}
+
+.recorded-value {
+    font-family: var(--font-digital);
+    font-size: 2rem;
+    color: var(--text-main);
+    font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    text-decoration: none;
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: #fff;
+}
+.btn-success:hover:not(:disabled) {
+    background-color: var(--success-hover);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    color: #000;
+}
+.btn-warning:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--danger-hover);
+}
+
+.btn-accent {
+    background-color: var(--accent);
+    color: #fff;
+}
+.btn-accent:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+/* Action Area Panels */
+.action-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 350px;
+}
+
+.display-container {
+    background: #090d16;
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem 1rem;
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.digital-timer {
+    font-family: var(--font-digital);
+    font-size: 4rem;
+    color: var(--warning);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.digital-counter {
+    font-family: var(--font-digital);
+    font-size: 5.5rem;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+.button-group-center {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Big Tactile Counter Buttons */
+.counter-tactile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.btn-tactile {
+    padding: 2rem 1rem;
+    font-size: 2.25rem;
+    font-weight: bold;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    color: #fff;
+    outline: none;
+}
+
+.btn-tactile:active {
+    transform: scale(0.95);
+}
+
+.btn-tactile-minus {
+    background-color: var(--danger);
+}
+.btn-tactile-minus:hover {
+    background-color: var(--danger-hover);
+}
+
+.btn-tactile-plus {
+    background-color: var(--success);
+}
+.btn-tactile-plus:hover {
+    background-color: var(--success-hover);
+}
+
+/* Status Loading Messages */
+.spinner {
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 3px solid #fff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+.status-message {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-success {
+    color: var(--success);
+}
+
+.status-error {
+    color: var(--danger);
+}
+
+/* ==========================================
+   Dashboard / Resume Page Styling
+   ========================================== */
+
+.dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .dashboard-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.dashboard-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.dashboard-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.btn-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+/* Stats Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stats-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.bg-blue-tint { background-color: rgba(99, 102, 241, 0.15); color: var(--primary); }
+.bg-yellow-tint { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.bg-green-tint { background-color: rgba(16, 185, 129, 0.15); color: var(--success); }
+.bg-orange-tint { background-color: rgba(249, 115, 22, 0.15); color: #f97316; }
+
+.stats-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.stats-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0.15rem 0;
+}
+
+.stats-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Filters Card */
+.filter-card {
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .filter-row {
+        flex-direction: row;
+    }
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+/* Tables */
+.table-card {
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+th {
+    background-color: rgba(0, 0, 0, 0.15);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Activity Badge inside Tables */
+.badge {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+}
+
+.badge-lari { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.badge-pushup { background-color: rgba(16, 185, 129, 0.15); color: var(--success); }
+.badge-situp { background-color: rgba(6, 182, 212, 0.15); color: var(--accent); }
+
+.table-info-footer {
+    padding: 1rem 1.25rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background-color: rgba(0,0,0,0.05);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Footer */
+.footer {
+    background-color: var(--bg-card);
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: auto;
+}
+
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
