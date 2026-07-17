@@ -32,16 +32,47 @@
     <main class="container">
         <div class="grid-layout">
             <!-- Left Side: Configuration Form -->
-            <section class="card card-form">
-                <h2 class="card-title">Konfigurasi Latihan</h2>
-                <form id="exercise-form">
-                    <!-- Dropdown Nama Siswa -->
-                    <div class="form-group">
-                        <label for="select-siswa">Nama Siswa</label>
-                        <select id="select-siswa" required>
-                            <option value="">-- Memuat daftar siswa... --</option>
-                        </select>
-                    </div>
+            <div class="form-group">
+                <label>Pilih Kelas</label>
+                <select id="selectKelas" required>
+                    <option value="">-- Memuat Data Kelas... --</option>
+                </select>
+            </div>
+            
+            <div class="form-group-inline">
+                <div class="form-group">
+                    <label>Jenis Aktivitas</label>
+                    <input type="text" id="jenisAktivitas" placeholder="Contoh: Lari 100m" required>
+                </div>
+                <div class="form-group">
+                    <label>Minggu Ke-</label>
+                    <input type="number" id="mingguKe" required>
+                </div>
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select id="semester" required>
+                        <option value="1">Ganjil</option>
+                        <option value="2">Genap</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stopwatch-container">
+                <div id="stopwatchDisplay" class="time-display">00:00:00</div>
+                <div class="stopwatch-controls">
+                    <button id="btnStart" class="btn-start">Mulai</button>
+                    <button id="btnStop" class="btn-stop">Stop</button>
+                    <button id="btnReset" class="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <div id="pencatatanContainer" style="display: none;">
+                <h3 style="margin-top: 20px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">Daftar Siswa</h3>
+                <ul id="listSiswaPencatatan" class="student-list">
+                    </ul>
+                
+                <button id="btnKirimKolektif" class="btn-kirim-kolektif">Kirim Semua Catatan Waktu</button>
+            </div>
 
                     <!-- Pilihan Aktivitas -->
                     <div class="form-group">
