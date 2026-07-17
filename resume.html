@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack Digital - Resume Realtime</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="icon-sport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v8H2V8z"></path>
+                    <path d="M6 12h4"></path>
+                </svg>
+                <span>FitTrack <strong>Digital</strong></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Catat Latihan</a>
+                <a href="resume.html" class="active">Resume Realtime</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <main class="container">
+        <!-- Header Dashboard -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Dashboard Resume Siswa</h1>
+                <p>Data hasil latihan fisik secara realtime dari Google Sheets</p>
+            </div>
+            <button class="btn btn-primary" id="btn-refresh-data">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                Segarkan Data
+            </button>
+        </div>
+
+        <!-- Quick Stats Cards Grid -->
+        <div class="stats-grid">
+            <div class="stats-card">
+                <div class="stats-icon bg-blue-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9M3 20h9M12 4V2M12 12V6M12 18v-2"></path>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Total Sesi Latihan</span>
+                    <h3 class="stats-value" id="stat-total-records">0</h3>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-yellow-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Lari Tercepat</span>
+                    <h3 class="stats-value" id="stat-best-running">--:--.--</h3>
+                    <p class="stats-sub" id="stat-best-running-name">-</p>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-green-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 15h-2v2h2v-2zM8 15H6v2h2v-2zM13 11h-2v4h2v-4z"></path>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Push Up</span>
+                    <h3 class="stats-value" id="stat-best-pushup">0</h3>
+                    <p class="stats-sub" id="stat-best-pushup-name">-</p>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-orange-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Sit Up</span>
+                    <h3 class="stats-value" id="stat-best-situp">0</h3>
+                    <p class="stats-sub" id="stat-best-situp-name">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls Card -->
+        <section class="card filter-card">
+            <h2 class="card-title-sm">Filter & Pencarian</h2>
+            <div class="filter-row">
+                <div class="form-group flex-grow">
+                    <input type="text" id="filter-search" placeholder="Cari nama siswa atau kelas...">
+                </div>
+                <div class="form-group">
+                    <select id="filter-aktivitas">
+                        <option value="">Semua Aktivitas</option>
+                        <option value="Lari">Lari (Stopwatch)</option>
+                        <option value="Push Up">Push Up</option>
+                        <option value="Sit Up">Sit Up</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-minggu">
+                        <option value="">Semua Minggu</option>
+                        <option value="Minggu 1">Minggu 1</option>
+                        <option value="Minggu 2">Minggu 2</option>
+                        <option value="Minggu 3">Minggu 3</option>
+                        <option value="Minggu 4">Minggu 4</option>
+                        <option value="Minggu 5">Minggu 5</option>
+                        <option value="Minggu 6">Minggu 6</option>
+                        <option value="Minggu 7">Minggu 7</option>
+                        <option value="Minggu 8">Minggu 8</option>
+                        <option value="Minggu 9">Minggu 9</option>
+                        <option value="Minggu 10">Minggu 10</option>
+                        <option value="Minggu 11">Minggu 11</option>
+                        <option value="Minggu 12">Minggu 12</option>
+                        <option value="Minggu 13">Minggu 13</option>
+                        <option value="Minggu 14">Minggu 14</option>
+                        <option value="Minggu 15">Minggu 15</option>
+                        <option value="Minggu 16">Minggu 16</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-semester">
+                        <option value="">Semua Semester</option>
+                        <option value="Ganjil">Ganjil</option>
+                        <option value="Genap">Genap</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table Display Area -->
+        <section class="card table-card">
+            <div class="table-container">
+                <table id="resume-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal Rekam</th>
+                            <th>Nama Siswa</th>
+                            <th>Aktivitas</th>
+                            <th>Hasil Latihan</th>
+                            <th>Periode</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resume-table-body">
+                        <!-- Dimuat secara dinamis via JavaScript -->
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-muted">Memuat data dari Google Sheets...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-info-footer" id="table-entries-info">
+                Menampilkan 0 data.
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 FitTrack Digital. Terkoneksi dengan Google Spreadsheet via Apps Script.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
