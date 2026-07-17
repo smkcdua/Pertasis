@@ -1,5 +1,5 @@
 // Konfigurasi URL Google Apps Script Anda
-const API_URL = "https://script.google.com/macros/s/AKfycbzO6o5F7NqsWSdDHu0QdBWcWUC9gqTT8rttuJ80Uc5oW7cUo83dsc0NKIawp_56PWec/exec"; // Pastikan menempelkan URL yang benar
+const API_URL = "https://script.google.com/macros/s/AKfycbwhI5kOQnIn56wpq-QiLc3QD9YjTd4Djclj-JApeCASpJJ6kFYQ5Hon3t49KrTso5Qv/exec"; // Pastikan menempelkan URL yang benar
 
 // Variabel Global
 let allSiswaData = [];
