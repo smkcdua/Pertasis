@@ -5,7 +5,7 @@
 
 // URL Aplikasi Web Google Apps Script hasil Deployment
 // PASTIKAN Anda mengisi URL ini setelah mendeploy Code.gs di Apps Script
-const GAS_API_URL = "SILAKAN_TEMPEL_URL_DEPLOYMENT_GAS_DI_SINI";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbykCRIPySSUSrHNgbXU7HHDYElo1rPOjyKoVKA4WBAhCbGJhUpMZYmypDD54Z2SL4G9/exec";
 
 // data cadangan lokal jika API belum dideploy, agar web langsung interaktif
 const DEFAULT_SISWA = [
