@@ -5,7 +5,7 @@
 
 // URL Aplikasi Web Google Apps Script hasil Deployment
 // PASTIKAN Anda mengisi URL ini setelah mendeploy Code.gs di Apps Script
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbykCRIPySSUSrHNgbXU7HHDYElo1rPOjyKoVKA4WBAhCbGJhUpMZYmypDD54Z2SL4G9/exec";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbywiNpfiL7O4oNhe7_QzatB2Xy5YTFl69L-sJA3awSSyXPZvkfMCtooYkmYQ1DQKMxo/exec";
 
 // data cadangan lokal jika API belum dideploy, agar web langsung interaktif
 const DEFAULT_SISWA = [
@@ -117,11 +117,15 @@ function initIndexPage() {
 
     function populateSiswaDropdown(list) {
         selectSiswa.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
-        list.forEach(siswa => {
+        
+        // OPTIMASI: Saring data, buang baris yang tidak memiliki Nama atau ID valid
+        const validList = list.filter(siswa => siswa.ID_Siswa && siswa.Nama_Siswa);
+        
+        validList.forEach(siswa => {
             const option = document.createElement("option");
             option.value = siswa.ID_Siswa;
             option.dataset.nama = siswa.Nama_Siswa;
-            option.textContent = `${siswa.Nama_Siswa} (${siswa.Kelas})`;
+            option.textContent = `${siswa.Nama_Siswa} (${siswa.Kelas || "-"})`;
             selectSiswa.appendChild(option);
         });
     }
