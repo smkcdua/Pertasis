@@ -20,15 +20,84 @@ function formatTime(ms) {
     let fitnessChartInstance = null;
     const chartModeSelect = document.getElementById('chart-mode');
 
-// Ubah "MM:SS:xx" -> total milidetik, untuk membandingkan mana yang tercepat
+// Ubah "MM:SS:xx" atau nilai waktu dari spreadsheet -> total milidetik, untuk membandingkan mana yang tercepat
 function parseTimeToMs(timeStr) {
-    if (!timeStr) return null;
-    const parts = String(timeStr).split(':');
-    if (parts.length !== 3) return null;
-    const m = parseInt(parts[0], 10) || 0;
-    const s = parseInt(parts[1], 10) || 0;
-    const cs = parseInt(parts[2], 10) || 0;
-    return (m * 60 + s) * 1000 + cs * 10;
+    if (timeStr === null || timeStr === undefined || timeStr === '') return null;
+
+    const str = String(timeStr).trim();
+
+    const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{3}))?(?:Z|[+-]\d{2}:\d{2})?$/i);
+    if (isoMatch) {
+        const h = parseInt(isoMatch[2], 10) || 0;
+        const m = parseInt(isoMatch[3], 10) || 0;
+        const s = parseInt(isoMatch[4], 10) || 0;
+        const ms = parseInt(isoMatch[5] || '0', 10) || 0;
+        return (((h * 60) + m) * 60 + s) * 1000 + ms;
+    }
+
+    const date = new Date(str);
+    if (!isNaN(date.getTime()) && /[T ]/.test(str)) {
+        const h = date.getHours();
+        const m = date.getMinutes();
+        const s = date.getSeconds();
+        const ms = date.getMilliseconds();
+        return (((h * 60) + m) * 60 + s) * 1000 + ms;
+    }
+
+    const parts = str.split(':');
+    if (parts.length === 3) {
+        const m = parseInt(parts[0], 10) || 0;
+        const s = parseInt(parts[1], 10) || 0;
+        const cs = parseInt(parts[2], 10) || 0;
+        return (m * 60 + s) * 1000 + cs * 10;
+    }
+
+    if (parts.length === 2) {
+        const m = parseInt(parts[0], 10) || 0;
+        const s = parseInt(parts[1], 10) || 0;
+        return (m * 60 + s) * 1000;
+    }
+
+    return null;
+}
+
+function formatRecordedTime(value) {
+    if (value === null || value === undefined || value === '') return '-';
+
+    const str = String(value).trim();
+    if (!str) return '-';
+
+    const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{3}))?(?:Z|[+-]\d{2}:\d{2})?$/i);
+    if (isoMatch) {
+        const h = String(parseInt(isoMatch[2], 10) || 0).padStart(2, '0');
+        const m = String(parseInt(isoMatch[3], 10) || 0).padStart(2, '0');
+        const s = String(parseInt(isoMatch[4], 10) || 0).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    const date = new Date(str);
+    if (!isNaN(date.getTime()) && /[T ]/.test(str)) {
+        const h = String(date.getHours()).padStart(2, '0');
+        const m = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    const parts = str.split(':');
+    if (parts.length === 3) {
+        const h = String(parseInt(parts[0], 10) || 0).padStart(2, '0');
+        const m = String(parseInt(parts[1], 10) || 0).padStart(2, '0');
+        const s = String(parseInt(parts[2], 10) || 0).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    if (parts.length === 2) {
+        const m = String(parseInt(parts[0], 10) || 0).padStart(2, '0');
+        const s = String(parseInt(parts[1], 10) || 0).padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    return str;
 }
 
 // "1" -> "Ganjil", "2" -> "Genap" (mengikuti value pada <select id="semester"> di halaman pencatatan)
@@ -535,11 +604,11 @@ function initHalamanResume() {
         allResumeData.forEach(rec => {
             const hasil = String(rec.Hasil || '');
             const jenis = String(rec.Jenis_Aktivitas || '').toLowerCase();
+            const ms = parseTimeToMs(hasil);
 
-            if (hasil.includes(':')) {
+            if (ms !== null) {
                 // Format waktu, dianggap catatan lari
-                const ms = parseTimeToMs(hasil);
-                if (ms !== null && (terbaikLari === null || ms < terbaikLari.ms)) {
+                if (terbaikLari === null || ms < terbaikLari.ms) {
                     terbaikLari = { ms, nama: rec.Nama_Siswa };
                 }
             } else {
@@ -621,7 +690,7 @@ function initHalamanResume() {
                     <td>${formatTanggal(rec.Timestamp)}</td>
                     <td>${escapeHtml(rec.Nama_Siswa)}</td>
                     <td>${escapeHtml(rec.Jenis_Aktivitas || '-')}</td>
-                    <td class="mono-cell">${escapeHtml(rec.Hasil || '-')}</td>
+                    <td class="mono-cell">${escapeHtml(formatRecordedTime(rec.Hasil))}</td>
                     <td>${periode}</td>
                 </tr>
             `;
