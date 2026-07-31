@@ -28,11 +28,14 @@ function parseTimeToMs(timeStr) {
 
     const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{3}))?(?:Z|[+-]\d{2}:\d{2})?$/i);
     if (isoMatch) {
-        const h = parseInt(isoMatch[2], 10) || 0;
-        const m = parseInt(isoMatch[3], 10) || 0;
-        const s = parseInt(isoMatch[4], 10) || 0;
-        const ms = parseInt(isoMatch[5] || '0', 10) || 0;
-        return (((h * 60) + m) * 60 + s) * 1000 + ms;
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+            const h = date.getHours();
+            const m = date.getMinutes();
+            const s = date.getSeconds();
+            const ms = date.getMilliseconds();
+            return (((h * 60) + m) * 60 + s) * 1000 + ms;
+        }
     }
 
     const date = new Date(str);
@@ -48,8 +51,9 @@ function parseTimeToMs(timeStr) {
     if (parts.length === 3) {
         const m = parseInt(parts[0], 10) || 0;
         const s = parseInt(parts[1], 10) || 0;
-        const cs = parseInt(parts[2], 10) || 0;
-        return (m * 60 + s) * 1000 + cs * 10;
+        const msPart = String(parts[2]).split('.')[0];
+        const ms = parseInt(msPart, 10) || 0;
+        return (m * 60 + s) * 1000 + ms;
     }
 
     if (parts.length === 2) {
@@ -93,6 +97,18 @@ function formatSpreadsheetValue(value) {
     }
 
     return str;
+}
+
+function formatChartTime(value) {
+    if (value === null || value === undefined || value === '') return '00:00:00.000';
+
+    const totalMs = Number(value) || 0;
+    const safeMs = Math.max(0, totalMs);
+    const minutes = Math.floor(safeMs / 60000);
+    const seconds = Math.floor((safeMs % 60000) / 1000);
+    const milliseconds = Math.floor(safeMs % 1000);
+
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
 }
 
 // "1" -> "Ganjil", "2" -> "Genap" (mengikuti value pada <select id="semester"> di halaman pencatatan)
@@ -425,25 +441,33 @@ function initHalamanResume() {
 
         if (modeChart === 'rata-rata') {
             // Hitung rata-rata per minggu dari data terfilter
+            const pointInfoData = [];
             const dataPoint = mingguSorted.map(m => {
                 const recs = data.filter(d => parseInt(d.Minggu_Ke, 10) === m);
-                if (recs.length === 0) return null;
+                if (recs.length === 0) {
+                    pointInfoData.push({ value: null, display: null });
+                    return null;
+                }
 
                 const total = recs.reduce((sum, r) => {
                     if (isTimeBased) {
                         const ms = parseTimeToMs(r.Hasil);
-                        return sum + (ms !== null ? ms / 1000 : 0); // Konversi ke detik
+                        return sum + (ms !== null ? ms : 0);
                     } else {
                         return sum + (parseInt(r.Hasil, 10) || 0);
                     }
                 }, 0);
 
-                return parseFloat((total / recs.length).toFixed(2));
+                const avgValue = recs.length > 0 ? total / recs.length : null;
+                const displayValue = recs.find(r => r.Hasil) ? formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil) : null;
+                pointInfoData.push({ value: avgValue, display: displayValue });
+                return avgValue;
             });
 
             datasets.push({
-                label: isTimeBased ? 'Rata-rata Waktu Lari (Detik)' : 'Rata-rata Repetisi',
+                label: isTimeBased ? 'Rata-rata Waktu Lari' : 'Rata-rata Repetisi',
                 data: dataPoint,
+                pointInfo: pointInfoData,
                 borderColor: '#3498db',
                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 borderWidth: 3,
@@ -458,14 +482,20 @@ function initHalamanResume() {
             const warnaPalette = ['#3498db', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6'];
 
             siswaUnik.forEach((nama, idx) => {
+                const pointInfoData = [];
                 const dataPoint = mingguSorted.map(m => {
                     const rec = data.find(d => d.Nama_Siswa === nama && parseInt(d.Minggu_Ke, 10) === m);
-                    if (!rec) return null;
+                    if (!rec) {
+                        pointInfoData.push({ value: null, display: null });
+                        return null;
+                    }
 
                     if (isTimeBased) {
                         const ms = parseTimeToMs(rec.Hasil);
-                        return ms !== null ? parseFloat((ms / 1000).toFixed(2)) : null;
+                        pointInfoData.push({ value: ms, display: formatSpreadsheetValue(rec.Hasil) });
+                        return ms !== null ? ms : null;
                     } else {
+                        pointInfoData.push({ value: parseInt(rec.Hasil, 10) || null, display: formatSpreadsheetValue(rec.Hasil) });
                         return parseInt(rec.Hasil, 10) || null;
                     }
                 });
@@ -473,6 +503,7 @@ function initHalamanResume() {
                 datasets.push({
                     label: nama,
                     data: dataPoint,
+                    pointInfo: pointInfoData,
                     borderColor: warnaPalette[idx % warnaPalette.length],
                     backgroundColor: 'transparent',
                     borderWidth: 2,
@@ -503,8 +534,10 @@ function initHalamanResume() {
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 let val = context.parsed.y;
+                                const pointInfo = context.dataset.pointInfo?.[context.dataIndex] || null;
                                 if (isTimeBased) {
-                                    return `${label}: ${val} Detik`;
+                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatChartTime(val);
+                                    return `${label}: ${displayValue}`;
                                 }
                                 return `${label}: ${val} Kali`;
                             }
@@ -513,10 +546,21 @@ function initHalamanResume() {
                 },
                 scales: {
                     y: {
-                        beginAtZero: false,
+                        beginAtZero: true,
+                        suggestedMin: 0,
+                        ticks: {
+                            callback: function(value) {
+                                if (!isTimeBased) return value;
+                                const matchingPoint = datasets.flatMap(ds => ds.pointInfo || []).find(entry => entry && entry.value === value);
+                                if (matchingPoint && matchingPoint.display) {
+                                    return matchingPoint.display;
+                                }
+                                return formatChartTime(value);
+                            }
+                        },
                         title: {
                             display: true,
-                            text: isTimeBased ? 'Waktu (Detik) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali'
+                            text: isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali'
                         }
                     }
                 }
