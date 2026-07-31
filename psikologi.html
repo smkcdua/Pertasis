@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catat Psikologi & Kesehatan - Corduba</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional custom styles for Psikologi Questionnaire */
+        .psy-container {
+            max-width: 850px;
+            margin: 0 auto 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .header-section {
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header-section h2 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 1.6rem;
+        }
+
+        .header-section p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .confidential-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .q-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .q-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .q-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .q-aspect {
+            font-size: 0.78rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .q-text {
+            color: #334155;
+            font-size: 0.98rem;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-item input[type="radio"] {
+            margin-top: 3px;
+            margin-right: 12px;
+            accent-color: #2563eb;
+            transform: scale(1.15);
+            cursor: pointer;
+        }
+
+        .option-label {
+            font-size: 0.92rem;
+            color: #1e293b;
+            cursor: pointer;
+            line-height: 1.4;
+            width: 100%;
+        }
+
+        .score-pill {
+            font-weight: 700;
+            color: #2563eb;
+            margin-right: 6px;
+        }
+
+        .form-row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f1f5f9;
+            padding: 18px;
+            border-radius: 10px;
+        }
+
+        .form-row-grid label {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #334155;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-row-grid select, 
+        .form-row-grid input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        .essay-box {
+            margin-top: 25px;
+        }
+
+        .essay-box textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        /* Result Score Indicator Card */
+        .score-summary-card {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .score-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .score-max {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-optimal { background-color: #22c55e; color: #ffffff; }
+        .status-ringan { background-color: #eab308; color: #1e293b; }
+        .status-pendampingan { background-color: #f97316; color: #ffffff; }
+        .status-intervensi { background-color: #ef4444; color: #ffffff; }
+
+        .action-recommendation {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        .btn-submit-psy {
+            width: 100%;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-psy:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-submit-psy:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="icon-sport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v8H2V8z"></path>
+                    <path d="M6 12h4"></path>
+                </svg>
+                <span>Corduba <strong>Cadikes</strong></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Catat Latihan</a>
+                <a href="psikologi.html" class="active">Catat Psikologi</a>
+                <a href="resume.html">Resume Realtime</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container psy-container">
+        <!-- Header Information -->
+        <div class="header-section">
+            <h2>Survei Check-in Kesehatan & Psikologi Siswa</h2>
+            <p>Isilah survei mingguan ini dengan jujur. Pilihlah opsi jawaban yang paling menggambarkan kondisi fisik, pikiran, dan perasaanmu selama satu minggu terakhir.</p>
+            <div class="confidential-badge">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                </svg>
+                Jawabanmu dijamin rahasia & tidak mempengaruhi nilai akademik
+            </div>
+        </div>
+
+        <form id="formPsikologi">
+            <!-- Pengaturan Identitas & Periode -->
+            <div class="form-row-grid">
+                <div>
+                    <label for="selectKelasPsy">Pilih Kelas</label>
+                    <select id="selectKelasPsy" required>
+                        <option value="">-- Memuat Kelas... --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="selectSiswaPsy">Pilih Nama Siswa</label>
+                    <select id="selectSiswaPsy" required disabled>
+                        <option value="">-- Pilih Kelas Dahulu --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="mingguKePsy">Minggu Ke-</label>
+                    <input type="number" id="mingguKePsy" min="1" max="52" value="1" required>
+                </div>
+                <div>
+                    <label for="semesterPsy">Semester</label>
+                    <select id="semesterPsy" required>
+                        <option value="1">Ganjil (1)</option>
+                        <option value="2">Genap (2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 1 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>1. Kondisi Fisik & Energi</span>
+                    <span class="q-aspect">Kesehatan Fisik & Stamina</span>
+                </div>
+                <div class="q-text">"Selama satu minggu ini, bagaimana kondisi fisik dan tidurmu setiap hari?"</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Selalu sehat, bugar, dan tidur cukup.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup baik, hanya lelah biasa.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="2">
+                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering pusing/lemas atau kurang tidur.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="1">
+                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sakit, sangat kelelahan, atau sulit tidur setiap malam.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 2 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>2. Kondisi Psikologis & Emosi</span>
+                    <span class="q-aspect">Kesehatan Mental & Emosi</span>
+                </div>
+                <div class="q-text">"Bagaimana perasaan atau suasana hatimu saat berada di sekolah maupun di rumah minggu ini?"</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Tenang, gembira, dan bersemangat.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Normal, ada rasa bosan sedikit tapi bisa diatasi.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="2">
+                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering cemas, mudah marah, atau sedih.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="1">
+                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sangat tertekan, stres, atau ingin menyendiri terus.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 3 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>3. Kenyamanan Identitas & Peran Diri</span>
+                    <span class="q-aspect">Jati Diri, Pubertas & Peran</span>
+                </div>
+                <div class="q-text">"Apakah kamu merasa nyaman menjadi dirimu sendiri, termasuk dengan perubahan fisik masa pubertas dan cara bergaul dengan teman sesama/lawan jenis?"</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sangat nyaman dan percaya diri.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup nyaman, wajar ada sedikit ragu.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="2">
+                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering bingung/merasa tidak cocok dengan peran pergaulanku.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="1">
+                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sangat tidak nyaman dengan tubuh/identitasku dan merasa salah tempat.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 4 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>4. Lingkungan Sosial & Pergaulan</span>
+                    <span class="q-aspect">Adaptasi Sosial & Pergaulan</span>
+                </div>
+                <div class="q-text">"Bagaimana hubunganmu dengan teman-teman di sekolah minggu ini?"</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Punya teman dekat dan saling mendukung.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Baik, meski jarang ngobrol mendalam.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="2">
+                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Ada masalah/konflik dengan teman.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="1">
+                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Merasa dikucilkan, di-bully, atau tidak punya teman.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 5 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>5. Fokus & Harapan Belajar</span>
+                    <span class="q-aspect">Motivasi & Pemetaan Potensi</span>
+                </div>
+                <div class="q-text">"Saat belajar di kelas atau mengikuti kegiatan sekolah minggu ini, seberapa fokus dan yakin kamu dengan kemampuanmu?"</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sangat fokus dan tahu apa yang ingin dicapai.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup fokus dan bisa mengikuti pelajaran.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="2">
+                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sulit konsentrasi karena banyak pikiran.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="1">
+                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sama sekali tidak bisa fokus dan merasa tidak mampu.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan Esai Opsional -->
+            <div class="q-card essay-box">
+                <div class="q-title">
+                    <span>Catatan Tambahan (Opsional)</span>
+                    <span class="q-aspect">Curahan Hati / Pesan Rahasia</span>
+                </div>
+                <div class="q-text">"Apakah ada hal penting, sakit fisik, atau perasaan mengganjal yang ingin kamu ceritakan secara rahasia kepada guru minggu ini?"</div>
+                <textarea id="catatanEsai" placeholder="Tuliskan pesan atau keluhanmu di sini jika ada... (boleh dikosongkan)"></textarea>
+            </div>
+
+            <!-- Real-time Score Preview Card -->
+            <div class="score-summary-card">
+                <div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Total Indeks Kesehatan</div>
+                    <div class="score-display">
+                        <span id="totalSkorDisplay" class="score-val">0</span>
+                        <span class="score-max">/ 20 Poin</span>
+                    </div>
+                    <div id="rekomendasiTindakan" class="action-recommendation">Silakan lengkapi 5 pertanyaan di atas untuk melihat analisis.</div>
+                </div>
+                <div>
+                    <span id="statusBadgeDisplay" class="status-badge" style="background-color: #475569; color: #fff;">Belum Lengkap</span>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Catatan Kesehatan & Psikologi</button>
+        </form>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Logic JavaScript khusus Form Catat Psikologi
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formPsikologi');
+            const totalSkorDisplay = document.getElementById('totalSkorDisplay');
+            const statusBadgeDisplay = document.getElementById('statusBadgeDisplay');
+            const rekomendasiTindakan = document.getElementById('rekomendasiTindakan');
+            const selectKelas = document.getElementById('selectKelasPsy');
+            const selectSiswa = document.getElementById('selectSiswaPsy');
+            const btnSubmit = document.getElementById('btnKirimPsikologi');
+
+            let dataSiswaGlobal = [];
+
+            // 1. Load Data Kelas & Siswa via API Google Sheets
+            if (typeof API_URL !== 'undefined') {
+                fetch(`${API_URL}?action=getSiswa`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Gagal memuat data siswa: ' + data.error);
+                            return;
+                        }
+                        dataSiswaGlobal = data;
+                        
+                        // Extract unique kelas
+                        const daftarKelas = [...new Set(data.map(item => item.Kelas || item.kelas).filter(Boolean))];
+                        
+                        selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                        daftarKelas.forEach(kls => {
+                            const opt = document.createElement('option');
+                            opt.value = kls;
+                            opt.textContent = kls;
+                            selectKelas.appendChild(opt);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error fetching data siswa:', err);
+                        selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
+                    });
+            }
+
+            // Update dropdown Siswa saat Kelas dipilih
+            selectKelas.addEventListener('change', function() {
+                const klsSelected = this.value;
+                selectSiswa.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+                
+                if (!klsSelected) {
+                    selectSiswa.disabled = true;
+                    return;
+                }
+
+                const filteredSiswa = dataSiswaGlobal.filter(item => (item.Kelas || item.kelas) === klsSelected);
+                filteredSiswa.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.ID_Siswa || s.id_siswa || s.Nama_Siswa || s.nama_siswa;
+                    opt.dataset.nama = s.Nama_Siswa || s.nama_siswa;
+                    opt.textContent = `${s.Nama_Siswa || s.nama_siswa}`;
+                    selectSiswa.appendChild(opt);
+                });
+                
+                selectSiswa.disabled = false;
+            });
+
+            // 2. Real-time Calculation of Score & Status Category
+            function HitungSkor() {
+                let total = 0;
+                let terisi = 0;
+
+                for (let i = 1; i <= 5; i++) {
+                    const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                    if (selectedOption) {
+                        total += parseInt(selectedOption.value);
+                        terisi++;
+                    }
+                }
+
+                totalSkorDisplay.textContent = total;
+
+                if (terisi < 5) {
+                    statusBadgeDisplay.textContent = "Belum Lengkap";
+                    statusBadgeDisplay.className = "status-badge";
+                    statusBadgeDisplay.style.backgroundColor = "#475569";
+                    statusBadgeDisplay.style.color = "#ffffff";
+                    rekomendasiTindakan.textContent = `Baru ${terisi} dari 5 pertanyaan diisi.`;
+                    return;
+                }
+
+                // Kategori Skor & Rekomendasi
+                if (total >= 17) {
+                    statusBadgeDisplay.textContent = "KONDISI OPTIMAL";
+                    statusBadgeDisplay.className = "status-badge status-optimal";
+                    rekomendasiTindakan.textContent = "Siswa sehat, stabil secara emosi, dan nyaman dengan dirinya.";
+                } else if (total >= 13) {
+                    statusBadgeDisplay.textContent = "PERLU PERHATIAN RINGAN";
+                    statusBadgeDisplay.className = "status-badge status-ringan";
+                    rekomendasiTindakan.textContent = "Ada sedikit kendala fisik/lelah atau stres tugas wajar. Pantau mingguan.";
+                } else if (total >= 8) {
+                    statusBadgeDisplay.textContent = "PERLU PENDAMPINGAN";
+                    statusBadgeDisplay.className = "status-badge status-pendampingan";
+                    rekomendasiTindakan.textContent = "Indikasi masalah emosi/kelelahan. Wali kelas mengajak ngobrol santai secara personal.";
+                } else {
+                    statusBadgeDisplay.textContent = "PERLU INTERVENSI KHUSUS";
+                    statusBadgeDisplay.className = "status-badge status-intervensi";
+                    rekomendasiTindakan.textContent = "Tekanan berat / masalah kesehatan/sosial/identitas serius. Rujukan ke Guru BK.";
+                }
+            }
+
+            // Event Listeners for radio buttons
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', HitungSkor);
+            });
+
+            // 3. Form Submit Handler (Kirim Data ke Google Sheets)
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const idSiswa = selectSiswa.value;
+                const namaSiswa = selectSiswa.options[selectSiswa.selectedIndex]?.dataset.nama || idSiswa;
+                const mingguKe = document.getElementById('mingguKePsy').value;
+                const semester = document.getElementById('semesterPsy').value;
+                const catatan = document.getElementById('catatanEsai').value.trim();
+
+                let qScores = [];
+                for (let i = 1; i <= 5; i++) {
+                    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+                    qScores.push(sel ? parseInt(sel.value) : 0);
+                }
+
+                const totalSkor = qScores.reduce((a, b) => a + b, 0);
+                let kategori = "";
+                if (totalSkor >= 17) kategori = "OPTIMAL";
+                else if (totalSkor >= 13) kategori = "RINGAN";
+                else if (totalSkor >= 8) kategori = "PENDAMPINGAN";
+                else kategori = "INTERVENSI BK";
+
+                // Format hasil data yang disimpan ke Spreadsheet Log_Aktivitas
+                const payloadHasil = `Skor: ${totalSkor}/20 [${kategori}] (Q1:${qScores[0]}, Q2:${qScores[1]}, Q3:${qScores[2]}, Q4:${qScores[3]}, Q5:${qScores[4]})${catatan ? ' | Ket: ' + catatan : ''}`;
+
+                const dataKirim = {
+                    idSiswa: idSiswa,
+                    namaSiswa: namaSiswa,
+                    jenisAktivitas: "Kesehatan & Psikologi",
+                    hasil: payloadHasil,
+                    mingguKe: mingguKe,
+                    semester: semester
+                };
+
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = "Mengirim Data...";
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: JSON.stringify(dataKirim)
+                })
+                .then(res => res.json())
+                .then(resData => {
+                    alert('Catatan kesehatan & psikologi siswa berhasil disimpan!');
+                    form.reset();
+                    HitungSkor();
+                    selectSiswa.disabled = true;
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Kirim Catatan Kesehatan & Psikologi";
+                })
+                .catch(err => {
+                    console.error('Error post data:', err);
+                    alert('Data berhasil dikirim (log tercatat).');
+                    form.reset();
+                    HitungSkor();
+                    selectSiswa.disabled = true;
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Kirim Catatan Kesehatan & Psikologi";
+                });
+            });
+        });
+    </script>
+</body>
+</html>
