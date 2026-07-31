@@ -9,11 +9,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwhI5kOQnIn56wpq-QiLc3Q
 
 // Format ms -> "MM:SS:xx" (dipakai stopwatch & tabel resume)
 function formatTime(ms) {
-    let date = new Date(ms);
-    let m = String(date.getUTCMinutes()).padStart(2, '0');
-    let s = String(date.getUTCSeconds()).padStart(2, '0');
-    let msFormat = String(date.getUTCMilliseconds()).padStart(3, '0').slice(0, 2);
-    return `${m}:${s}:${msFormat}`;
+    const totalMs = Number(ms) || 0;
+    const minutes = Math.floor(totalMs / 60000);
+    const seconds = Math.floor((totalMs % 60000) / 1000);
+    const milliseconds = Math.floor(totalMs % 1000);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
 }
 
 // Variabel instance Chart.js
@@ -61,40 +61,35 @@ function parseTimeToMs(timeStr) {
     return null;
 }
 
-function formatRecordedTime(value) {
+function formatSpreadsheetValue(value) {
     if (value === null || value === undefined || value === '') return '-';
 
     const str = String(value).trim();
-    if (!str) return '-';
+    if (!str || str === '-') return '-';
+
+    if (/^\d{1,2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(str) || /^\d{1,2}:\d{2}\.\d{1,3}$/.test(str)) {
+        return str;
+    }
 
     const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{3}))?(?:Z|[+-]\d{2}:\d{2})?$/i);
     if (isoMatch) {
-        const h = String(parseInt(isoMatch[2], 10) || 0).padStart(2, '0');
-        const m = String(parseInt(isoMatch[3], 10) || 0).padStart(2, '0');
-        const s = String(parseInt(isoMatch[4], 10) || 0).padStart(2, '0');
-        return `${h}:${m}:${s}`;
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
     }
 
     const date = new Date(str);
     if (!isNaN(date.getTime()) && /[T ]/.test(str)) {
-        const h = String(date.getHours()).padStart(2, '0');
-        const m = String(date.getMinutes()).padStart(2, '0');
-        const s = String(date.getSeconds()).padStart(2, '0');
-        return `${h}:${m}:${s}`;
-    }
-
-    const parts = str.split(':');
-    if (parts.length === 3) {
-        const h = String(parseInt(parts[0], 10) || 0).padStart(2, '0');
-        const m = String(parseInt(parts[1], 10) || 0).padStart(2, '0');
-        const s = String(parseInt(parts[2], 10) || 0).padStart(2, '0');
-        return `${h}:${m}:${s}`;
-    }
-
-    if (parts.length === 2) {
-        const m = String(parseInt(parts[0], 10) || 0).padStart(2, '0');
-        const s = String(parseInt(parts[1], 10) || 0).padStart(2, '0');
-        return `${m}:${s}`;
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
     }
 
     return str;
@@ -597,9 +592,9 @@ function initHalamanResume() {
     function computeAndRenderStats() {
         statTotal.textContent = allResumeData.length;
 
-        let terbaikLari = null; // { ms, nama }
-        let terbaikPushup = null; // { nilai, nama }
-        let terbaikSitup = null; // { nilai, nama }
+        let terbaikLari = null; // { ms, value, nama }
+        let terbaikPushup = null; // { nilai, value, nama }
+        let terbaikSitup = null; // { nilai, value, nama }
 
         allResumeData.forEach(rec => {
             const hasil = String(rec.Hasil || '');
@@ -607,33 +602,32 @@ function initHalamanResume() {
             const ms = parseTimeToMs(hasil);
 
             if (ms !== null) {
-                // Format waktu, dianggap catatan lari
                 if (terbaikLari === null || ms < terbaikLari.ms) {
-                    terbaikLari = { ms, nama: rec.Nama_Siswa };
+                    terbaikLari = { ms, value: hasil, nama: rec.Nama_Siswa };
                 }
             } else {
                 const nilai = parseInt(hasil, 10);
                 if (!isNaN(nilai)) {
                     if (jenis.includes('push')) {
                         if (terbaikPushup === null || nilai > terbaikPushup.nilai) {
-                            terbaikPushup = { nilai, nama: rec.Nama_Siswa };
+                            terbaikPushup = { nilai, value: hasil, nama: rec.Nama_Siswa };
                         }
                     } else if (jenis.includes('sit')) {
                         if (terbaikSitup === null || nilai > terbaikSitup.nilai) {
-                            terbaikSitup = { nilai, nama: rec.Nama_Siswa };
+                            terbaikSitup = { nilai, value: hasil, nama: rec.Nama_Siswa };
                         }
                     }
                 }
             }
         });
 
-        statBestRunning.textContent = terbaikLari ? formatTime(terbaikLari.ms) : '--:--.--';
+        statBestRunning.textContent = terbaikLari ? formatSpreadsheetValue(terbaikLari.value) : '--:--.--';
         statBestRunningName.textContent = terbaikLari ? terbaikLari.nama : '-';
 
-        statBestPushup.textContent = terbaikPushup ? terbaikPushup.nilai : '0';
+        statBestPushup.textContent = terbaikPushup ? formatSpreadsheetValue(terbaikPushup.value) : '0';
         statBestPushupName.textContent = terbaikPushup ? terbaikPushup.nama : '-';
 
-        statBestSitup.textContent = terbaikSitup ? terbaikSitup.nilai : '0';
+        statBestSitup.textContent = terbaikSitup ? formatSpreadsheetValue(terbaikSitup.value) : '0';
         statBestSitupName.textContent = terbaikSitup ? terbaikSitup.nama : '-';
     }
 
@@ -690,7 +684,7 @@ function initHalamanResume() {
                     <td>${formatTanggal(rec.Timestamp)}</td>
                     <td>${escapeHtml(rec.Nama_Siswa)}</td>
                     <td>${escapeHtml(rec.Jenis_Aktivitas || '-')}</td>
-                    <td class="mono-cell">${escapeHtml(formatRecordedTime(rec.Hasil))}</td>
+                    <td class="mono-cell">${escapeHtml(formatSpreadsheetValue(rec.Hasil))}</td>
                     <td>${periode}</td>
                 </tr>
             `;
