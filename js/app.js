@@ -407,6 +407,34 @@ function initHalamanResume() {
     const filterMinggu = document.getElementById('filter-minggu');
     const filterSemester = document.getElementById('filter-semester');
 
+    function normalizeActivityName(value) {
+        return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    }
+
+    function isPsychologyActivity(value) {
+        const normalized = normalizeActivityName(value);
+        return normalized.includes('kesehatandanpsikologi') || normalized.includes('psikologi') || normalized.includes('observasibk') || normalized.includes('observasi');
+    }
+
+    function getNumericScore(value) {
+        const str = String(value || '').trim().toLowerCase();
+        if (str === 'q1' || str === '1') return 1;
+        if (str === 'q2' || str === '2') return 2;
+        if (str === 'q3' || str === '3') return 3;
+        if (str === 'q4' || str === '4') return 4;
+        const num = parseInt(str, 10);
+        return Number.isNaN(num) ? null : num;
+    }
+
+    function formatQuartileLabel(value) {
+        const score = getNumericScore(value);
+        if (score === 1) return 'Q1';
+        if (score === 2) return 'Q2';
+        if (score === 3) return 'Q3';
+        if (score === 4) return 'Q4';
+        return formatSpreadsheetValue(value);
+    }
+
     if (chartModeSelect) {
         chartModeSelect.addEventListener('change', applyFiltersAndRender);
     }
@@ -427,11 +455,14 @@ function initHalamanResume() {
         const mingguSorted = Array.from(mingguSet).sort((a, b) => a - b);
         const labels = mingguSorted.map(m => `Minggu ${m}`);
 
+        const selectedActivity = filterAktivitas.value;
+        const isPsychologySelected = isPsychologyActivity(selectedActivity);
+
         // 2. Tentukan apakah jenis aktivitas dominan bertipe waktu (Lari) atau repetisi
         let isTimeBased = false;
-        if (filterAktivitas.value.toLowerCase().includes('lari')) {
+        if (!isPsychologySelected && selectedActivity.toLowerCase().includes('lari')) {
             isTimeBased = true;
-        } else if (data.length > 0 && String(data[0].Hasil || '').includes(':')) {
+        } else if (!isPsychologySelected && data.length > 0 && String(data[0].Hasil || '').includes(':')) {
             isTimeBased = true;
         }
 
@@ -450,6 +481,11 @@ function initHalamanResume() {
                 }
 
                 const total = recs.reduce((sum, r) => {
+                    if (isPsychologySelected) {
+                        const score = getNumericScore(r.Hasil);
+                        return sum + (score !== null ? score : 0);
+                    }
+
                     if (isTimeBased) {
                         const ms = parseTimeToMs(r.Hasil);
                         return sum + (ms !== null ? ms : 0);
@@ -459,13 +495,13 @@ function initHalamanResume() {
                 }, 0);
 
                 const avgValue = recs.length > 0 ? total / recs.length : null;
-                const displayValue = recs.find(r => r.Hasil) ? formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil) : null;
+                const displayValue = recs.find(r => r.Hasil) ? (isPsychologySelected ? formatQuartileLabel(recs.find(r => r.Hasil).Hasil) : formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil)) : null;
                 pointInfoData.push({ value: avgValue, display: displayValue });
                 return avgValue;
             });
 
             datasets.push({
-                label: isTimeBased ? 'Rata-rata Waktu Lari' : 'Rata-rata Repetisi',
+                label: isPsychologySelected ? 'Rata-rata Skor Kesehatan & Psikologi' : (isTimeBased ? 'Rata-rata Waktu Lari' : 'Rata-rata Repetisi'),
                 data: dataPoint,
                 pointInfo: pointInfoData,
                 borderColor: '#3498db',
@@ -488,6 +524,12 @@ function initHalamanResume() {
                     if (!rec) {
                         pointInfoData.push({ value: null, display: null });
                         return null;
+                    }
+
+                    if (isPsychologySelected) {
+                        const score = getNumericScore(rec.Hasil);
+                        pointInfoData.push({ value: score, display: formatQuartileLabel(rec.Hasil) });
+                        return score !== null ? score : null;
                     }
 
                     if (isTimeBased) {
@@ -535,6 +577,10 @@ function initHalamanResume() {
                                 let label = context.dataset.label || '';
                                 let val = context.parsed.y;
                                 const pointInfo = context.dataset.pointInfo?.[context.dataIndex] || null;
+                                if (isPsychologySelected) {
+                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatQuartileLabel(val);
+                                    return `${label}: ${displayValue}`;
+                                }
                                 if (isTimeBased) {
                                     const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatChartTime(val);
                                     return `${label}: ${displayValue}`;
@@ -547,9 +593,15 @@ function initHalamanResume() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMin: 0,
+                        suggestedMin: isPsychologySelected ? 1 : 0,
+                        max: isPsychologySelected ? 4 : undefined,
                         ticks: {
+                            stepSize: isPsychologySelected ? 1 : undefined,
                             callback: function(value) {
+                                if (isPsychologySelected) {
+                                    const labels = ['Q1', 'Q2', 'Q3', 'Q4'];
+                                    return labels[value - 1] || value;
+                                }
                                 if (!isTimeBased) return value;
                                 const matchingPoint = datasets.flatMap(ds => ds.pointInfo || []).find(entry => entry && entry.value === value);
                                 if (matchingPoint && matchingPoint.display) {
@@ -560,7 +612,7 @@ function initHalamanResume() {
                         },
                         title: {
                             display: true,
-                            text: isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali'
+                            text: isPsychologySelected ? 'Skor Kuartil (Q1-Q4)' : (isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali')
                         }
                     }
                 }
@@ -686,13 +738,14 @@ function initHalamanResume() {
 
         let filtered = allResumeData.filter(rec => {
             if (q) {
-                const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''}`.toLowerCase();
+                const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''} ${rec.Jenis_Aktivitas || ''}`.toLowerCase();
                 if (!gabungan.includes(q)) return false;
             }
 
             if (aktivitasFilter) {
-                const jenis = String(rec.Jenis_Aktivitas || '').toLowerCase();
-                if (!jenis.includes(aktivitasFilter.toLowerCase())) return false;
+                const jenis = normalizeActivityName(rec.Jenis_Aktivitas);
+                const filterNorm = normalizeActivityName(aktivitasFilter);
+                if (!jenis.includes(filterNorm)) return false;
             }
 
             if (mingguFilter) {
