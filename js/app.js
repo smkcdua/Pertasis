@@ -1,7 +1,7 @@
 // ==========================================================
 // KONFIGURASI
 // ==========================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxgXwQoTVAz4MtUA7MEQs67Fx5X-lDS6YKiy7iGDKEEm18_pKcQmAzwJOnrt07I8dA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwIHdFBw5dchWdf-6s9RFpLy91bjBR0aM6DXbvdgCGu2MFTPB7_qtXtnLc6bjW1wGrk/exec";
 
 // ==========================================================
 // UTILITAS BERSAMA (dipakai di kedua halaman)
