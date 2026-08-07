@@ -99,6 +99,34 @@ function formatSpreadsheetValue(value) {
     return str;
 }
 
+function parsePsychologyScore(value) {
+    if (value === null || value === undefined || value === '') return null;
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+    const str = String(value).trim();
+    if (!str) return null;
+
+    const lower = str.toLowerCase();
+    if (lower === 'q1' || lower === '1') return 1;
+    if (lower === 'q2' || lower === '2') return 2;
+    if (lower === 'q3' || lower === '3') return 3;
+    if (lower === 'q4' || lower === '4') return 4;
+
+    const explicitMatch = str.match(/skor observasi:\s*([0-9]{1,2})(?:\s*\/\s*20)?/i);
+    if (explicitMatch) return parseInt(explicitMatch[1], 10);
+
+    const scoreAnyMatch = str.match(/([0-9]{1,2})(?:\s*\/\s*20)?/);
+    if (scoreAnyMatch) return parseInt(scoreAnyMatch[1], 10);
+
+    return null;
+}
+
+function formatPsychologyLabel(value) {
+    const score = parsePsychologyScore(value);
+    if (score !== null) return score;
+    return formatSpreadsheetValue(value);
+}
+
 function formatChartTime(value) {
     if (value === null || value === undefined || value === '') return '00:00:00.000';
 
@@ -482,7 +510,7 @@ function initHalamanResume() {
 
                 const total = recs.reduce((sum, r) => {
                     if (isPsychologySelected) {
-                        const score = getNumericScore(r.Hasil);
+                        const score = parsePsychologyScore(r.Hasil);
                         return sum + (score !== null ? score : 0);
                     }
 
@@ -495,7 +523,7 @@ function initHalamanResume() {
                 }, 0);
 
                 const avgValue = recs.length > 0 ? total / recs.length : null;
-                const displayValue = recs.find(r => r.Hasil) ? (isPsychologySelected ? formatQuartileLabel(recs.find(r => r.Hasil).Hasil) : formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil)) : null;
+                const displayValue = recs.find(r => r.Hasil) ? (isPsychologySelected ? formatPsychologyLabel(recs.find(r => r.Hasil).Hasil) : formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil)) : null;
                 pointInfoData.push({ value: avgValue, display: displayValue });
                 return avgValue;
             });
@@ -527,8 +555,8 @@ function initHalamanResume() {
                     }
 
                     if (isPsychologySelected) {
-                        const score = getNumericScore(rec.Hasil);
-                        pointInfoData.push({ value: score, display: formatQuartileLabel(rec.Hasil) });
+                        const score = parsePsychologyScore(rec.Hasil);
+                        pointInfoData.push({ value: score, display: formatPsychologyLabel(rec.Hasil) });
                         return score !== null ? score : null;
                     }
 
@@ -578,7 +606,7 @@ function initHalamanResume() {
                                 let val = context.parsed.y;
                                 const pointInfo = context.dataset.pointInfo?.[context.dataIndex] || null;
                                 if (isPsychologySelected) {
-                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatQuartileLabel(val);
+                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatPsychologyLabel(val);
                                     return `${label}: ${displayValue}`;
                                 }
                                 if (isTimeBased) {
@@ -593,14 +621,12 @@ function initHalamanResume() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMin: isPsychologySelected ? 1 : 0,
-                        max: isPsychologySelected ? 4 : undefined,
+                        suggestedMin: isPsychologySelected ? 0 : 0,
                         ticks: {
                             stepSize: isPsychologySelected ? 1 : undefined,
                             callback: function(value) {
                                 if (isPsychologySelected) {
-                                    const labels = ['Q1', 'Q2', 'Q3', 'Q4'];
-                                    return labels[value - 1] || value;
+                                    return value;
                                 }
                                 if (!isTimeBased) return value;
                                 const matchingPoint = datasets.flatMap(ds => ds.pointInfo || []).find(entry => entry && entry.value === value);
@@ -612,8 +638,10 @@ function initHalamanResume() {
                         },
                         title: {
                             display: true,
-                            text: isPsychologySelected ? 'Skor Kuartil (Q1-Q4)' : (isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali')
-                        }
+                            text: isPsychologySelected ? 'Skor Psikologi (0-20)' : (isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali')
+                        },
+                        min: isPsychologySelected ? 0 : undefined,
+                        max: isPsychologySelected ? 20 : undefined
                     }
                 }
             }
