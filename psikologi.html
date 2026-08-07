@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catat Psikologi & Kesehatan - Corduba</title>
+    <title>Observasi Psikologi & Identitas - Corduba</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Additional custom styles for Psikologi Questionnaire */
+        /* Custom styles for Psikologi Questionnaire */
         .psy-container {
             max-width: 850px;
             margin: 0 auto 40px auto;
@@ -42,9 +42,9 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background-color: #f0fdf4;
-            color: #166534;
-            border: 1px solid #bbf7d0;
+            background-color: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -136,6 +136,14 @@
             font-weight: 700;
             color: #2563eb;
             margin-right: 6px;
+        }
+        
+        .score-pill.warning {
+            color: #eab308;
+        }
+        
+        .score-pill.danger {
+            color: #ef4444;
         }
 
         .form-row-grid {
@@ -269,7 +277,7 @@
             </div>
             <div class="nav-links">
                 <a href="index.html">Catat Latihan</a>
-                <a href="psikologi.html" class="active">Catat Psikologi</a>
+                <a href="psikologi.html" class="active">Observasi Guru</a>
                 <a href="resume.html">Resume Realtime</a>
             </div>
         </div>
@@ -278,13 +286,13 @@
     <div class="container psy-container">
         <!-- Header Information -->
         <div class="header-section">
-            <h2>Survei Check-in Kesehatan & Psikologi Siswa</h2>
-            <p>Isilah survei mingguan ini dengan jujur. Pilihlah opsi jawaban yang paling menggambarkan kondisi fisik, pikiran, dan perasaanmu selama satu minggu terakhir.</p>
+            <h2>Formulir Observasi Guru: Deteksi Dini Psikologi & Identitas</h2>
+            <p>Diisi oleh Guru/Wali Kelas berdasarkan <strong>pengamatan objektif</strong> terhadap perilaku, penampilan, dan interaksi sosial siswa di lingkungan sekolah, tanpa sepengetahuan siswa.</p>
             <div class="confidential-badge">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
                 </svg>
-                Jawabanmu dijamin rahasia & tidak mempengaruhi nilai akademik
+                Dokumen Rahasia - Khusus untuk Pemetaan & Intervensi Guru BK
             </div>
         </div>
 
@@ -319,26 +327,26 @@
             <!-- Pertanyaan 1 -->
             <div class="q-card">
                 <div class="q-title">
-                    <span>1. Kondisi Fisik & Energi</span>
-                    <span class="q-aspect">Kesehatan Fisik & Stamina</span>
+                    <span>1. Penampilan Fisik & Ekspresi Gender</span>
+                    <span class="q-aspect">Observasi Visual</span>
                 </div>
-                <div class="q-text">"Selama satu minggu ini, bagaimana kondisi fisik dan tidurmu setiap hari?"</div>
+                <div class="q-text">Berdasarkan pengamatan, bagaimana cara siswa berpenampilan dan mengekspresikan dirinya melalui seragam, gestur, atau atribut di sekolah?</div>
                 <div class="options-group">
                     <label class="option-item">
                         <input type="radio" name="q1" value="4" required>
-                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Selalu sehat, bugar, dan tidur cukup.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sesuai dengan aturan seragam jenis kelaminnya, berpenampilan rapi dan wajar.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q1" value="3">
-                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup baik, hanya lelah biasa.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Sesekali menunjukkan gaya/aksesoris yang agak berbeda atau tomboy/gemulai, namun masih batas wajar.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q1" value="2">
-                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering pusing/lemas atau kurang tidur.</span>
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering berpenampilan, berdandan, atau menggunakan gestur yang sengaja meniru lawan jenis.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q1" value="1">
-                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sakit, sangat kelelahan, atau sulit tidur setiap malam.</span>
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Secara konsisten & ekstrem menolak mengenakan seragam/atribut sesuai jenis kelamin aslinya.</span>
                     </label>
                 </div>
             </div>
@@ -346,26 +354,26 @@
             <!-- Pertanyaan 2 -->
             <div class="q-card">
                 <div class="q-title">
-                    <span>2. Kondisi Psikologis & Emosi</span>
-                    <span class="q-aspect">Kesehatan Mental & Emosi</span>
+                    <span>2. Interaksi Sosial & Pergaulan Teman Sebaya</span>
+                    <span class="q-aspect">Dinamika Sosial</span>
                 </div>
-                <div class="q-text">"Bagaimana perasaan atau suasana hatimu saat berada di sekolah maupun di rumah minggu ini?"</div>
+                <div class="q-text">Bagaimana pola pergaulan siswa dengan teman sebaya (baik sesama jenis maupun lawan jenis)?</div>
                 <div class="options-group">
                     <label class="option-item">
                         <input type="radio" name="q2" value="4" required>
-                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Tenang, gembira, dan bersemangat.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Membaur dengan baik, memiliki pertemanan sehat dengan sesama maupun lawan jenis.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q2" value="3">
-                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Normal, ada rasa bosan sedikit tapi bisa diatasi.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cenderung pemalu atau eksklusif di satu kelompok saja, tapi tidak ada masalah penolakan sosial.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q2" value="2">
-                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering cemas, mudah marah, atau sedih.</span>
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Menghindari bergaul dengan sesama jenis, sangat eksklusif berkumpul dengan lawan jenis & mengadopsi peran mereka.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q2" value="1">
-                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sangat tertekan, stres, atau ingin menyendiri terus.</span>
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Sering mengisolasi diri, menjadi korban bully karena ekspresi gendernya, atau menolak keras berinteraksi dengan sesama jenis.</span>
                     </label>
                 </div>
             </div>
@@ -373,26 +381,26 @@
             <!-- Pertanyaan 3 -->
             <div class="q-card">
                 <div class="q-title">
-                    <span>3. Kenyamanan Identitas & Peran Diri</span>
-                    <span class="q-aspect">Jati Diri, Pubertas & Peran</span>
+                    <span>3. Respons Terhadap Aktivitas Berbasis Gender</span>
+                    <span class="q-aspect">Respons Terhadap Pemisahan Kelompok</span>
                 </div>
-                <div class="q-text">"Apakah kamu merasa nyaman menjadi dirimu sendiri, termasuk dengan perubahan fisik masa pubertas dan cara bergaul dengan teman sesama/lawan jenis?"</div>
+                <div class="q-text">Bagaimana reaksi siswa ketika dihadapkan pada aktivitas yang memisahkan siswa laki-laki dan perempuan (misal: olahraga, ibadah berjamaah, menggunakan toilet/ruang ganti)?</div>
                 <div class="options-group">
                     <label class="option-item">
                         <input type="radio" name="q3" value="4" required>
-                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sangat nyaman dan percaya diri.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Mengikuti kegiatan sesuai kelompok perannya tanpa keluhan atau masalah.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q3" value="3">
-                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup nyaman, wajar ada sedikit ragu.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Mengikuti kegiatan walau kadang tampak kurang antusias atau pasif.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q3" value="2">
-                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sering bingung/merasa tidak cocok dengan peran pergaulanku.</span>
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering mencari alasan untuk menghindari kegiatan yang berkelompok berdasarkan jenis kelamin (misal pura-pura sakit saat olahraga).</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q3" value="1">
-                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sangat tidak nyaman dengan tubuh/identitasku dan merasa salah tempat.</span>
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Menolak keras, panik, atau menangis saat diharuskan bergabung dengan kelompok sesama jenis atau masuk ke fasilitas sesuai kodratnya.</span>
                     </label>
                 </div>
             </div>
@@ -400,26 +408,26 @@
             <!-- Pertanyaan 4 -->
             <div class="q-card">
                 <div class="q-title">
-                    <span>4. Lingkungan Sosial & Pergaulan</span>
-                    <span class="q-aspect">Adaptasi Sosial & Pergaulan</span>
+                    <span>4. Komunikasi & Identitas Verbal</span>
+                    <span class="q-aspect">Komunikasi & Panggilan</span>
                 </div>
-                <div class="q-text">"Bagaimana hubunganmu dengan teman-teman di sekolah minggu ini?"</div>
+                <div class="q-text">Apakah Anda mengamati adanya penyimpangan dalam cara siswa merujuk pada dirinya sendiri atau meminta teman memanggilnya?</div>
                 <div class="options-group">
                     <label class="option-item">
                         <input type="radio" name="q4" value="4" required>
-                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Punya teman dekat dan saling mendukung.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Normal. Menggunakan nama asli dan berkomunikasi wajar.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q4" value="3">
-                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Baik, meski jarang ngobrol mendalam.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Normal, walau kadang menggunakan panggilan akrab/gaul yang agak tomboy/feminin sebatas candaan.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q4" value="2">
-                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Ada masalah/konflik dengan teman.</span>
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering meminta teman-temannya memanggil dengan nama alias yang identik dengan lawan jenis.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q4" value="1">
-                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Merasa dikucilkan, di-bully, atau tidak punya teman.</span>
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Secara terbuka menyatakan ketidakpuasan terhadap jenis kelaminnya dan menuntut diakui (pronouns/nama) sebagai lawan jenis.</span>
                     </label>
                 </div>
             </div>
@@ -427,49 +435,49 @@
             <!-- Pertanyaan 5 -->
             <div class="q-card">
                 <div class="q-title">
-                    <span>5. Fokus & Harapan Belajar</span>
-                    <span class="q-aspect">Motivasi & Pemetaan Potensi</span>
+                    <span>5. Perilaku Emosional & Psikologis</span>
+                    <span class="q-aspect">Stabilitas Mental</span>
                 </div>
-                <div class="q-text">"Saat belajar di kelas atau mengikuti kegiatan sekolah minggu ini, seberapa fokus dan yakin kamu dengan kemampuanmu?"</div>
+                <div class="q-text">Secara umum, bagaimana stabilitas emosi siswa selama berada di lingkungan sekolah?</div>
                 <div class="options-group">
                     <label class="option-item">
                         <input type="radio" name="q5" value="4" required>
-                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sangat fokus dan tahu apa yang ingin dicapai.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Stabil, ceria, dan emosi terkendali dengan baik.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q5" value="3">
-                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cukup fokus dan bisa mengikuti pelajaran.</span>
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Kadang murung, sensitif, atau kelelahan, tapi masih dalam tahap kewajaran remaja.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q5" value="2">
-                        <span class="option-label"><span class="score-pill">(Skor 2)</span> Sulit konsentrasi karena banyak pikiran.</span>
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering terlihat sangat cemas, mudah tersinggung, atau menunjukkan perubahan mood drastis, diduga terkait krisis identitas/sosial.</span>
                     </label>
                     <label class="option-item">
                         <input type="radio" name="q5" value="1">
-                        <span class="option-label"><span class="score-pill">(Skor 1)</span> Sama sekali tidak bisa fokus dan merasa tidak mampu.</span>
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Menunjukkan gejala depresi, melukai diri sendiri (self-harm), atau tingkat stres tinggi yang membahayakan dirinya.</span>
                     </label>
                 </div>
             </div>
 
-            <!-- Pertanyaan Esai Opsional -->
+            <!-- Pertanyaan Esai -->
             <div class="q-card essay-box">
                 <div class="q-title">
-                    <span>Catatan Tambahan (Opsional)</span>
-                    <span class="q-aspect">Curahan Hati / Pesan Rahasia</span>
+                    <span>Catatan Tambahan / Jurnal Observasi (Opsional)</span>
+                    <span class="q-aspect">Detail Temuan Guru</span>
                 </div>
-                <div class="q-text">"Apakah ada hal penting, sakit fisik, atau perasaan mengganjal yang ingin kamu ceritakan secara rahasia kepada guru minggu ini?"</div>
-                <textarea id="catatanEsai" placeholder="Tuliskan pesan atau keluhanmu di sini jika ada... (boleh dikosongkan)"></textarea>
+                <div class="q-text">Tuliskan temuan spesifik, perubahan perilaku drastis, atau detail insiden yang perlu segera ditindaklanjuti oleh Tim Bimbingan Konseling (BK).</div>
+                <textarea id="catatanEsai" placeholder="Contoh: Siswa sering menangis saat disuruh baris di kelompok laki-laki pada jam olahraga, dll..."></textarea>
             </div>
 
             <!-- Real-time Score Preview Card -->
             <div class="score-summary-card">
                 <div>
-                    <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Total Indeks Kesehatan</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Indeks Observasi Guru</div>
                     <div class="score-display">
                         <span id="totalSkorDisplay" class="score-val">0</span>
                         <span class="score-max">/ 20 Poin</span>
                     </div>
-                    <div id="rekomendasiTindakan" class="action-recommendation">Silakan lengkapi 5 pertanyaan di atas untuk melihat analisis.</div>
+                    <div id="rekomendasiTindakan" class="action-recommendation">Silakan lengkapi 5 indikator observasi di atas.</div>
                 </div>
                 <div>
                     <span id="statusBadgeDisplay" class="status-badge" style="background-color: #475569; color: #fff;">Belum Lengkap</span>
@@ -477,13 +485,12 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Catatan Kesehatan & Psikologi</button>
+            <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Data Observasi ke Server BK</button>
         </form>
     </div>
 
     <script src="js/app.js"></script>
     <script>
-        // Logic JavaScript khusus Form Catat Psikologi
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formPsikologi');
             const totalSkorDisplay = document.getElementById('totalSkorDisplay');
@@ -549,12 +556,18 @@
             function HitungSkor() {
                 let total = 0;
                 let terisi = 0;
+                let adaGejalaDisforia = false;
 
                 for (let i = 1; i <= 5; i++) {
                     const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
                     if (selectedOption) {
-                        total += parseInt(selectedOption.value);
+                        const val = parseInt(selectedOption.value);
+                        total += val;
                         terisi++;
+                        // Jika ada poin 1 atau 2 pada pertanyaan identitas (q1, q3, q4), flag nyala
+                        if ((i === 1 || i === 3 || i === 4) && val <= 2) {
+                            adaGejalaDisforia = true;
+                        }
                     }
                 }
 
@@ -565,27 +578,32 @@
                     statusBadgeDisplay.className = "status-badge";
                     statusBadgeDisplay.style.backgroundColor = "#475569";
                     statusBadgeDisplay.style.color = "#ffffff";
-                    rekomendasiTindakan.textContent = `Baru ${terisi} dari 5 pertanyaan diisi.`;
+                    rekomendasiTindakan.textContent = `Baru ${terisi} dari 5 indikator diobservasi.`;
                     return;
                 }
 
+                let extraWarning = adaGejalaDisforia ? " [⚠️ TERDETEKSI GEJALA DISFORIA GENDER]" : "";
+
                 // Kategori Skor & Rekomendasi
-                if (total >= 17) {
+                if (total >= 17 && !adaGejalaDisforia) {
                     statusBadgeDisplay.textContent = "KONDISI OPTIMAL";
                     statusBadgeDisplay.className = "status-badge status-optimal";
-                    rekomendasiTindakan.textContent = "Siswa sehat, stabil secara emosi, dan nyaman dengan dirinya.";
-                } else if (total >= 13) {
+                    rekomendasiTindakan.textContent = "Perkembangan identitas dan emosi siswa wajar & stabil.";
+                } else if (total >= 13 && !adaGejalaDisforia) {
                     statusBadgeDisplay.textContent = "PERLU PERHATIAN RINGAN";
                     statusBadgeDisplay.className = "status-badge status-ringan";
-                    rekomendasiTindakan.textContent = "Ada sedikit kendala fisik/lelah atau stres tugas wajar. Pantau mingguan.";
-                } else if (total >= 8) {
+                    rekomendasiTindakan.textContent = "Terpantau ada stres wajar/perubahan minor. Terus pantau perkembangannya.";
+                } else if (total >= 8 || adaGejalaDisforia) {
+                    // Walau skor total tinggi, tapi kalau ada 1 indikator disforia skor 2/1, langsung masuk pendampingan minimal
                     statusBadgeDisplay.textContent = "PERLU PENDAMPINGAN";
                     statusBadgeDisplay.className = "status-badge status-pendampingan";
-                    rekomendasiTindakan.textContent = "Indikasi masalah emosi/kelelahan. Wali kelas mengajak ngobrol santai secara personal.";
-                } else {
-                    statusBadgeDisplay.textContent = "PERLU INTERVENSI KHUSUS";
+                    rekomendasiTindakan.textContent = "Indikasi awal masalah identitas/emosi. Lakukan dialog persuasif." + extraWarning;
+                } 
+                
+                if (total < 8) {
+                    statusBadgeDisplay.textContent = "INTERVENSI KHUSUS";
                     statusBadgeDisplay.className = "status-badge status-intervensi";
-                    rekomendasiTindakan.textContent = "Tekanan berat / masalah kesehatan/sosial/identitas serius. Rujukan ke Guru BK.";
+                    rekomendasiTindakan.textContent = "Krisis identitas / stres tingkat tinggi. Segera jadwalkan rujukan ke Guru BK." + extraWarning;
                 }
             }
 
@@ -605,20 +623,27 @@
                 const catatan = document.getElementById('catatanEsai').value.trim();
 
                 let qScores = [];
+                let adaGejala = false;
                 for (let i = 1; i <= 5; i++) {
                     const sel = document.querySelector(`input[name="q${i}"]:checked`);
-                    qScores.push(sel ? parseInt(sel.value) : 0);
+                    const val = sel ? parseInt(sel.value) : 0;
+                    qScores.push(val);
+                    if ((i === 1 || i === 3 || i === 4) && val <= 2) {
+                        adaGejala = true;
+                    }
                 }
 
                 const totalSkor = qScores.reduce((a, b) => a + b, 0);
                 let kategori = "";
-                if (totalSkor >= 17) kategori = "OPTIMAL";
-                else if (totalSkor >= 13) kategori = "RINGAN";
-                else if (totalSkor >= 8) kategori = "PENDAMPINGAN";
-                else kategori = "INTERVENSI BK";
+                if (totalSkor < 8) kategori = "INTERVENSI KHUSUS";
+                else if (totalSkor < 13 || adaGejala) kategori = "PENDAMPINGAN";
+                else if (totalSkor < 17) kategori = "RINGAN";
+                else kategori = "OPTIMAL";
 
-                // Format hasil data yang disimpan ke Spreadsheet Log_Aktivitas
-                const payloadHasil = `Skor: ${totalSkor}/20 [${kategori}] (Q1:${qScores[0]}, Q2:${qScores[1]}, Q3:${qScores[2]}, Q4:${qScores[3]}, Q5:${qScores[4]})${catatan ? ' | Ket: ' + catatan : ''}`;
+                const flagDisforia = adaGejala ? ` [ALERT: Deteksi Disforia/Penyimpangan]` : '';
+
+                // Format hasil data yang disimpan
+                const payloadHasil = `Skor Observasi: ${totalSkor}/20 [${kategori}]${flagDisforia} (Penampilan:${qScores[0]}, Sosial:${qScores[1]}, Kegiatan:${qScores[2]}, Verbal:${qScores[3]}, Emosi:${qScores[4]})${catatan ? ' | Jurnal: ' + catatan : ''}`;
 
                 const dataKirim = {
                     idSiswa: idSiswa,
@@ -639,12 +664,12 @@
                 })
                 .then(res => res.json())
                 .then(resData => {
-                    alert('Catatan kesehatan & psikologi siswa berhasil disimpan!');
+                    alert('Data observasi berhasil disimpan ke Server!');
                     form.reset();
                     HitungSkor();
                     selectSiswa.disabled = true;
                     btnSubmit.disabled = false;
-                    btnSubmit.textContent = "Kirim Catatan Kesehatan & Psikologi";
+                    btnSubmit.textContent = "Kirim Data Observasi ke Server BK";
                 })
                 .catch(err => {
                     console.error('Error post data:', err);
@@ -653,7 +678,7 @@
                     HitungSkor();
                     selectSiswa.disabled = true;
                     btnSubmit.disabled = false;
-                    btnSubmit.textContent = "Kirim Catatan Kesehatan & Psikologi";
+                    btnSubmit.textContent = "Kirim Data Observasi ke Server BK";
                 });
             });
         });
