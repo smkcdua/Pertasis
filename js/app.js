@@ -165,6 +165,125 @@ async function fetchJSON(url, options) {
     return response.json();
 }
 
+// -------------------------
+// Jadwal Kelas (global)
+// -------------------------
+let scheduleList = [];
+
+async function loadScheduleList() {
+    const candidates = ['getDaftarKelas','getDaftar_kelas','getDaftarKelasRaw','getDaftarKelasList'];
+    for (const action of candidates) {
+        try {
+            const res = await fetch(`${API_URL}?action=${action}`);
+            if (!res.ok) continue;
+            const json = await res.json();
+            if (Array.isArray(json) && json.length > 0) {
+                scheduleList = json.map(r => ({
+                    id: r.ID_kelas || r.ID_KELAS || r.id_kelas || r.ID_kelas || '',
+                    nama: r.Nama_kelas || r.Nama_Kelas || r.nama_kelas || r.Nama_kelas || '',
+                    jam: r.Jam || r.jam || r.time || '',
+                    hari: String(r.Hari || r.hari || '').toLowerCase()
+                }));
+                return scheduleList;
+            }
+        } catch (e) {
+            // ignore and try next
+        }
+    }
+
+    // Fallback: try generic endpoint via fetchJSON
+    try {
+        const json = await fetchJSON(`${API_URL}?action=getDaftarKelas`);
+        if (Array.isArray(json)) {
+            scheduleList = json.map(r => ({
+                id: r.ID_kelas || r.ID_KELAS || r.id_kelas || r.ID_kelas || '',
+                nama: r.Nama_kelas || r.Nama_Kelas || r.nama_kelas || r.Nama_kelas || '',
+                jam: r.Jam || r.jam || r.time || '',
+                hari: String(r.Hari || r.hari || '').toLowerCase()
+            }));
+            return scheduleList;
+        }
+    } catch (e) {
+        // ignore
+    }
+
+    scheduleList = [];
+    return scheduleList;
+}
+
+function parseJamRange(jamStr) {
+    if (!jamStr) return null;
+    const s = String(jamStr).trim();
+    const parts = s.split('-').map(p => p.trim());
+    const toMinutes = t => {
+        const m = t.match(/(\d{1,2}):(\d{2})/);
+        if (!m) return null;
+        return parseInt(m[1],10)*60 + parseInt(m[2],10);
+    };
+    const start = toMinutes(parts[0]);
+    const end = parts[1] ? toMinutes(parts[1]) : null;
+    return { start, end };
+}
+
+function isNowInSchedule(entry) {
+    if (!entry || !entry.hari || !entry.jam) return false;
+    const now = new Date();
+    const dayNames = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
+    const today = dayNames[now.getDay()];
+    if (!String(entry.hari).toLowerCase().includes(today)) return false;
+    const range = parseJamRange(entry.jam);
+    if (!range || range.start === null) return false;
+    const nowMinutes = now.getHours()*60 + now.getMinutes();
+    if (range.end === null) {
+        return Math.abs(nowMinutes - range.start) <= 30;
+    }
+    return nowMinutes >= range.start && nowMinutes <= range.end;
+}
+
+function getTodayClasses() {
+    if (!scheduleList || scheduleList.length === 0) return [];
+    return scheduleList.filter(isNowInSchedule).map(s => s.nama).filter(Boolean);
+}
+function getNowClassesWithTime() {
+    if (!scheduleList || scheduleList.length === 0) return [];
+    return scheduleList.filter(isNowInSchedule).map(s => ({ nama: s.nama, jam: s.jam || '' }));
+}
+
+function getClassesForTodayByDay() {
+    if (!scheduleList || scheduleList.length === 0) return [];
+    const now = new Date();
+    const dayNames = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
+    const today = dayNames[now.getDay()];
+    return scheduleList.filter(s => String(s.hari || '').toLowerCase().includes(today)).map(s => ({ nama: s.nama, jam: s.jam || '' })).filter(Boolean);
+}
+// Update displays: index shows day-based classes (with times), resume shows current classes (with times)
+function updateCurrentTimeAndClass() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID');
+    const nowClasses = getNowClassesWithTime(); // currently ongoing
+    const dayClasses = getClassesForTodayByDay(); // all classes today
+
+    const elResumeTime = document.getElementById('currentTimeDisplay');
+    const elResumeClasses = document.getElementById('currentClassDisplay');
+    const elResumeClassesTimes = document.getElementById('currentClassTimesDisplay');
+
+    const elIdxTime = document.getElementById('currentTimeDisplayIndex');
+    const elIdxClasses = document.getElementById('currentClassesDisplayIndex');
+    const elIdxClassesTimes = document.getElementById('currentClassesTimesIndex');
+
+    // Update time
+    if (elResumeTime) elResumeTime.textContent = timeStr;
+    if (elIdxTime) elIdxTime.textContent = timeStr;
+
+    // Resume: current classes now
+    if (elResumeClasses) elResumeClasses.textContent = nowClasses.length ? nowClasses.map(c => c.nama).join(', ') : '-';
+    if (elResumeClassesTimes) elResumeClassesTimes.textContent = nowClasses.length ? nowClasses.map(c => (c.jam ? `${c.nama} (${c.jam})` : c.nama)).join(' • ') : '-';
+
+    // Index/Psikologi: classes for today (day-based)
+    if (elIdxClasses) elIdxClasses.textContent = dayClasses.length ? dayClasses.map(d => d.nama).join(', ') : '-';
+    if (elIdxClassesTimes) elIdxClassesTimes.textContent = dayClasses.length ? dayClasses.map(d => (d.jam ? `${d.nama} (${d.jam})` : d.nama)).join(' • ') : '-';
+}
+
 // ==========================================================
 // HALAMAN 1: PENCATATAN (index.html)
 // Hanya berjalan jika elemen halaman pencatatan ada di DOM,
@@ -428,6 +547,7 @@ if (document.getElementById('resume-table-body')) {
 
 function initHalamanResume() {
     let allResumeData = []; // gabungan Log_Aktivitas + Kelas hasil join dari Daftar_Siswa
+    let scheduleList = []; // daftar kelas dari sheet Daftar_kelas
 
     const chartModeSelect = document.getElementById('chart-mode');
     const filterSearch = document.getElementById('filter-search');
@@ -466,6 +586,8 @@ function initHalamanResume() {
     if (chartModeSelect) {
         chartModeSelect.addEventListener('change', applyFiltersAndRender);
     }
+
+    
 
     // ----------------------------------------
     // FITUR KURVA GRAFIK (LINE CHART)
@@ -680,6 +802,8 @@ function initHalamanResume() {
                 fetchJSON(`${API_URL}?action=getResume`)
             ]);
 
+            // schedule list and clock are handled globally on window load
+
             if (siswaData && siswaData.error) throw new Error(siswaData.error);
             if (logData && logData.error) throw new Error(logData.error);
 
@@ -803,6 +927,8 @@ function initHalamanResume() {
 
         tbody.innerHTML = data.map((rec, idx) => {
             const periode = `Minggu ${rec.Minggu_Ke || '-'} &middot; ${semesterLabel(rec.Semester)}`;
+            const kelasSedang = getCurrentClasses();
+            const inClassNow = kelasSedang.includes(rec._Kelas) ? 'Ya' : '';
             return `
                 <tr>
                     <td>${idx + 1}</td>
@@ -810,6 +936,7 @@ function initHalamanResume() {
                     <td>${escapeHtml(rec.Nama_Siswa)}</td>
                     <td>${escapeHtml(rec.Jenis_Aktivitas || '-')}</td>
                     <td class="mono-cell">${escapeHtml(formatSpreadsheetValue(rec.Hasil))}</td>
+                    <td>${inClassNow}</td>
                     <td>${periode}</td>
                 </tr>
             `;
@@ -835,3 +962,14 @@ function initHalamanResume() {
 
     window.addEventListener('load', muatDataResume);
 }
+
+    // Inisialisasi global untuk jadwal & jam ketika dokumen siap
+    window.addEventListener('load', async () => {
+        try {
+            await loadScheduleList();
+        } catch (e) {
+            // ignore
+        }
+        updateCurrentTimeAndClass();
+        setInterval(updateCurrentTimeAndClass, 1000);
+    });
