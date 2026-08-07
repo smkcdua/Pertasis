@@ -288,7 +288,15 @@
         <div class="header-section">
             <h2>Formulir Observasi Guru: Deteksi Dini Psikologi & Identitas</h2>
             <p>Diisi oleh Guru/Wali Kelas berdasarkan <strong>pengamatan objektif</strong> terhadap perilaku, penampilan, dan interaksi sosial siswa di lingkungan sekolah, tanpa sepengetahuan siswa.</p>
-            <div class="confidential-badge">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="color:#334155; font-weight:700;">Waktu sekarang: <span id="currentTimeDisplayIndex">--:--:--</span></div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    <div style="color:#64748b;">Kelas hari ini: <span id="currentClassesDisplayIndex">-</span></div>
+                    <div style="color:#94a3b8; font-size:0.95rem; margin-top:4px;">Jam: <span id="currentClassesTimesIndex">-</span></div>
+                </div>
+            </div>
+        <div class="confidential-badge">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
                 </svg>
