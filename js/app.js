@@ -2,6 +2,28 @@
 // KONFIGURASI
 // ==========================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbwIHdFBw5dchWdf-6s9RFpLy91bjBR0aM6DXbvdgCGu2MFTPB7_qtXtnLc6bjW1wGrk/exec";
+const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 jam
+
+function getCachedJson(key, maxAgeMs) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data || typeof data !== 'object' || !data.timestamp || !data.value) return null;
+        if (maxAgeMs && Date.now() - data.timestamp > maxAgeMs) return null;
+        return data.value;
+    } catch (e) {
+        return null;
+    }
+}
+
+function setCachedJson(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), value }));
+    } catch (e) {
+        // ignore storage errors
+    }
+}
 
 // ==========================================================
 // UTILITAS BERSAMA (dipakai di kedua halaman)
@@ -171,6 +193,12 @@ async function fetchJSON(url, options) {
 let scheduleList = [];
 
 async function loadScheduleList() {
+    const cached = getCachedJson('pertasis_schedule_list', CACHE_TTL_MS);
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+        scheduleList = cached;
+        return scheduleList;
+    }
+
     const candidates = ['getDaftarKelas','getDaftar_kelas','getDaftarKelasRaw','getDaftarKelasList'];
     for (const action of candidates) {
         try {
@@ -184,6 +212,7 @@ async function loadScheduleList() {
                     jam: r.Jam || r.jam || r.time || '',
                     hari: String(r.Hari || r.hari || '').toLowerCase()
                 }));
+                setCachedJson('pertasis_schedule_list', scheduleList);
                 return scheduleList;
             }
         } catch (e) {
@@ -201,6 +230,7 @@ async function loadScheduleList() {
                 jam: r.Jam || r.jam || r.time || '',
                 hari: String(r.Hari || r.hari || '').toLowerCase()
             }));
+            setCachedJson('pertasis_schedule_list', scheduleList);
             return scheduleList;
         }
     } catch (e) {
@@ -318,20 +348,21 @@ function initHalamanPencatatan() {
     // ----------------------------------------
     async function muatDataSiswa() {
         try {
-            const data = await fetchJSON(`${API_URL}?action=getSiswa`);
-
-            if (data && data.error) {
-                throw new Error(data.error);
+            const cached = getCachedJson('pertasis_siswa_data', CACHE_TTL_MS);
+            if (cached && Array.isArray(cached) && cached.length > 0) {
+                allSiswaData = cached;
+            } else {
+                const data = await fetchJSON(`${API_URL}?action=getSiswa`);
+                if (data && data.error) {
+                    throw new Error(data.error);
+                }
+                allSiswaData = data.filter(siswa => siswa.ID_Siswa && siswa.Nama_Siswa && siswa.Kelas);
+                setCachedJson('pertasis_siswa_data', allSiswaData);
             }
 
-            // Filter data rusak
-            allSiswaData = data.filter(siswa => siswa.ID_Siswa && siswa.Nama_Siswa && siswa.Kelas);
-
-            // Ambil daftar kelas yang unik
             const kelasSet = new Set(allSiswaData.map(siswa => String(siswa.Kelas).trim()));
             const kelasList = Array.from(kelasSet).sort();
 
-            // Masukkan ke Dropdown Kelas
             selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
             kelasList.forEach(kelas => {
                 const option = document.createElement("option");
@@ -340,9 +371,46 @@ function initHalamanPencatatan() {
                 selectKelas.appendChild(option);
             });
 
+            const savedKelas = localStorage.getItem('pertasis_selected_class');
+            if (savedKelas && kelasSet.has(savedKelas)) {
+                selectKelas.value = savedKelas;
+            }
+            renderStudentList();
         } catch (error) {
             alert("Gagal memuat data: " + error.message);
         }
+    }
+
+    const jenisAktivitasEl = document.getElementById('jenisAktivitas');
+    const mingguKeEl = document.getElementById('mingguKe');
+    const semesterEl = document.getElementById('semester');
+
+    const savedMode = localStorage.getItem('pertasis_mode_pencatatan');
+    if (savedMode) {
+        modePencatatan.value = savedMode;
+    }
+
+    const savedJenis = localStorage.getItem('pertasis_jenis_aktivitas');
+    if (savedJenis && jenisAktivitasEl) jenisAktivitasEl.value = savedJenis;
+    const savedMinggu = localStorage.getItem('pertasis_minggu_ke');
+    if (savedMinggu && mingguKeEl) mingguKeEl.value = savedMinggu;
+    const savedSemester = localStorage.getItem('pertasis_semester');
+    if (savedSemester && semesterEl) semesterEl.value = savedSemester;
+
+    if (jenisAktivitasEl) {
+        jenisAktivitasEl.addEventListener('input', () => {
+            localStorage.setItem('pertasis_jenis_aktivitas', jenisAktivitasEl.value);
+        });
+    }
+    if (mingguKeEl) {
+        mingguKeEl.addEventListener('input', () => {
+            localStorage.setItem('pertasis_minggu_ke', mingguKeEl.value);
+        });
+    }
+    if (semesterEl) {
+        semesterEl.addEventListener('change', () => {
+            localStorage.setItem('pertasis_semester', semesterEl.value);
+        });
     }
 
     window.addEventListener('load', muatDataSiswa);
@@ -429,8 +497,14 @@ function initHalamanPencatatan() {
     }
 
     // Pasang event listener perubahan Kelas / Mode
-    selectKelas.addEventListener('change', renderStudentList);
-    modePencatatan.addEventListener('change', renderStudentList);
+    selectKelas.addEventListener('change', () => {
+        localStorage.setItem('pertasis_selected_class', selectKelas.value);
+        renderStudentList();
+    });
+    modePencatatan.addEventListener('change', () => {
+        localStorage.setItem('pertasis_mode_pencatatan', modePencatatan.value);
+        renderStudentList();
+    });
 
     // ----------------------------------------
     // 3. LOGIKA STOPWATCH GLOBAL
@@ -551,9 +625,12 @@ function initHalamanResume() {
 
     const chartModeSelect = document.getElementById('chart-mode');
     const filterSearch = document.getElementById('filter-search');
+    const filterSiswa = document.getElementById('filter-siswa');
     const filterAktivitas = document.getElementById('filter-aktivitas');
     const filterMinggu = document.getElementById('filter-minggu');
     const filterSemester = document.getElementById('filter-semester');
+    const observationSummaryCard = document.getElementById('observation-summary-card');
+    const observationSummaryText = document.getElementById('observation-summary-text');
 
     function normalizeActivityName(value) {
         return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -586,8 +663,68 @@ function initHalamanResume() {
     if (chartModeSelect) {
         chartModeSelect.addEventListener('change', applyFiltersAndRender);
     }
+    if (filterSiswa) {
+        filterSiswa.addEventListener('change', () => {
+            updateObservationSummary(filterSiswa.value);
+            applyFiltersAndRender();
+        });
+    }
 
-    
+    function renderStudentOptions() {
+        if (!filterSiswa) return;
+        const selected = filterSiswa.value;
+        const siswaUnik = [...new Set(allResumeData.map(d => d.Nama_Siswa).filter(Boolean))].sort((a,b)=>a.localeCompare(b, 'id'));
+        filterSiswa.innerHTML = '<option value="">Pilih Nama Siswa</option>';
+        siswaUnik.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            filterSiswa.appendChild(opt);
+        });
+        if (selected) filterSiswa.value = selected;
+    }
+
+    function getLatestPsychologyRecord(studentName) {
+        if (!studentName) return null;
+        const records = allResumeData
+            .filter(rec => rec.Nama_Siswa === studentName)
+            .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+        return records.find(rec => isPsychologyActivity(rec.Jenis_Aktivitas)) || null;
+    }
+
+    function updateObservationSummary(studentName) {
+        if (!observationSummaryCard || !observationSummaryText) return;
+        if (!studentName) {
+            observationSummaryCard.style.display = 'none';
+            observationSummaryText.textContent = 'Pilih nama siswa untuk melihat catatan observasi terakhir.';
+            return;
+        }
+
+        const psychRec = getLatestPsychologyRecord(studentName);
+        if (psychRec) {
+            const timestamp = formatTanggal(psychRec.Timestamp);
+            const label = psychRec.Jenis_Aktivitas || 'Observasi Guru';
+            const hasil = formatSpreadsheetValue(psychRec.Hasil);
+            const skor = formatPsychologyLabel(psychRec.Hasil);
+            observationSummaryCard.style.display = 'block';
+            observationSummaryText.innerHTML = `Terakhir: <strong>${timestamp}</strong><br>Jenis: <strong>${label}</strong><br>Index Observasi: <strong>${skor}</strong><br>Hasil catatan: <strong>${hasil}</strong>`;
+            return;
+        }
+
+        const records = allResumeData
+            .filter(rec => rec.Nama_Siswa === studentName)
+            .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+        if (records.length > 0) {
+            const latest = records[0];
+            const timestamp = formatTanggal(latest.Timestamp);
+            observationSummaryCard.style.display = 'block';
+            observationSummaryText.innerHTML = `Belum ditemukan catatan observasi psikologi terbaru. Catatan terakhir siswa ini:<br><strong>${timestamp}</strong> - ${escapeHtml(latest.Jenis_Aktivitas || '-')} / ${escapeHtml(formatSpreadsheetValue(latest.Hasil))}`;
+            return;
+        }
+
+        observationSummaryCard.style.display = 'block';
+        observationSummaryText.textContent = 'Belum ada catatan untuk siswa yang dipilih.';
+    }
 
     // ----------------------------------------
     // FITUR KURVA GRAFIK (LINE CHART)
@@ -821,6 +958,8 @@ function initHalamanResume() {
                 }));
 
             computeAndRenderStats();
+            renderStudentOptions();
+            updateObservationSummary(filterSiswa ? filterSiswa.value : '');
             applyFiltersAndRender();
 
         } catch (error) {
@@ -892,6 +1031,10 @@ function initHalamanResume() {
             if (q) {
                 const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''} ${rec.Jenis_Aktivitas || ''}`.toLowerCase();
                 if (!gabungan.includes(q)) return false;
+            }
+
+            if (filterSiswa && filterSiswa.value) {
+                if (rec.Nama_Siswa !== filterSiswa.value) return false;
             }
 
             if (aktivitasFilter) {
