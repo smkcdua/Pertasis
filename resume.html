@@ -120,6 +120,11 @@
                     <input type="text" id="filter-search" placeholder="Cari nama siswa, kelas, atau aktivitas...">
                 </div>
                 <div class="form-group">
+                    <select id="filter-siswa">
+                        <option value="">Pilih Nama Siswa</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <select id="filter-aktivitas">
                         <option value="">Semua Aktivitas</option>
                         <option value="Lari">Lari (Stopwatch)</option>
@@ -156,6 +161,13 @@
                         <option value="Genap">Genap</option>
                     </select>
                 </div>
+            </div>
+        </section>
+
+        <section class="card summary-card" id="observation-summary-card" style="display:none; margin-bottom: 20px;">
+            <div class="summary-header">
+                <h2 class="card-title-sm">Index Observasi Guru Terakhir</h2>
+                <p id="observation-summary-text" class="stats-sub">Pilih nama siswa untuk melihat catatan observasi terakhir.</p>
             </div>
         </section>
 
