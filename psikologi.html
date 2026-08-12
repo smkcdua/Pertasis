@@ -494,6 +494,7 @@
 
             <!-- Submit Button -->
             <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Data Observasi ke Server BK</button>
+            <button type="button" id="btnClearCache" class="btn-submit-psy btn-clear-cache" style="background: #dc2626; margin-top: 10px;">Hapus Cache Lokal</button>
         </form>
     </div>
 
@@ -510,39 +511,8 @@
 
             let dataSiswaGlobal = [];
 
-            // 1. Load Data Kelas & Siswa via API Google Sheets
-            if (typeof API_URL !== 'undefined') {
-                fetch(`${API_URL}?action=getSiswa`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert('Gagal memuat data siswa: ' + data.error);
-                            return;
-                        }
-                        dataSiswaGlobal = data;
-                        
-                        // Extract unique kelas
-                        const daftarKelas = [...new Set(data.map(item => item.Kelas || item.kelas).filter(Boolean))];
-                        
-                        selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
-                        daftarKelas.forEach(kls => {
-                            const opt = document.createElement('option');
-                            opt.value = kls;
-                            opt.textContent = kls;
-                            selectKelas.appendChild(opt);
-                        });
-                    })
-                    .catch(err => {
-                        console.error('Error fetching data siswa:', err);
-                        selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
-                    });
-            }
-
-            // Update dropdown Siswa saat Kelas dipilih
-            selectKelas.addEventListener('change', function() {
-                const klsSelected = this.value;
+            function isiDropdownSiswa(klsSelected, restoreStudent) {
                 selectSiswa.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
-                
                 if (!klsSelected) {
                     selectSiswa.disabled = true;
                     return;
@@ -556,9 +526,114 @@
                     opt.textContent = `${s.Nama_Siswa || s.nama_siswa}`;
                     selectSiswa.appendChild(opt);
                 });
-                
-                selectSiswa.disabled = false;
+
+                selectSiswa.disabled = filteredSiswa.length === 0;
+                if (restoreStudent) {
+                    const savedStudent = localStorage.getItem('pertasis_psy_selected_student');
+                    if (savedStudent) {
+                        selectSiswa.value = savedStudent;
+                    }
+                }
+            }
+
+            function restorePsySelection(daftarKelas) {
+                const savedClass = localStorage.getItem('pertasis_psy_selected_class');
+                if (savedClass && daftarKelas.includes(savedClass)) {
+                    selectKelas.value = savedClass;
+                    isiDropdownSiswa(savedClass, true);
+                }
+
+                const savedWeek = localStorage.getItem('pertasis_psy_minggu_ke');
+                const weekEl = document.getElementById('mingguKePsy');
+                if (weekEl && savedWeek) {
+                    weekEl.value = savedWeek;
+                }
+
+                const savedSemester = localStorage.getItem('pertasis_psy_semester');
+                const semesterEl = document.getElementById('semesterPsy');
+                if (semesterEl && savedSemester) {
+                    semesterEl.value = savedSemester;
+                }
+            }
+
+            // 1. Load Data Kelas & Siswa via API Google Sheets
+            if (typeof API_URL !== 'undefined') {
+                const cached = (typeof getCachedJson === 'function') ? getCachedJson('pertasis_siswa_data', CACHE_TTL_MS) : null;
+                const handleSiswaData = (data) => {
+                    dataSiswaGlobal = data;
+                    const daftarKelas = [...new Set(data.map(item => item.Kelas || item.kelas).filter(Boolean))];
+                    selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                    daftarKelas.forEach(kls => {
+                        const opt = document.createElement('option');
+                        opt.value = kls;
+                        opt.textContent = kls;
+                        selectKelas.appendChild(opt);
+                    });
+                    restorePsySelection(daftarKelas);
+                };
+
+                if (cached && Array.isArray(cached) && cached.length > 0) {
+                    handleSiswaData(cached);
+                } else {
+                    fetch(`${API_URL}?action=getSiswa`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert('Gagal memuat data siswa: ' + data.error);
+                                return;
+                            }
+                            if (typeof setCachedJson === 'function') {
+                                setCachedJson('pertasis_siswa_data', data);
+                            }
+                            handleSiswaData(data);
+                        })
+                        .catch(err => {
+                            console.error('Error fetching data siswa:', err);
+                            selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
+                        });
+                }
+            }
+
+            // Update dropdown Siswa saat Kelas dipilih
+            selectKelas.addEventListener('change', function() {
+                const klsSelected = this.value;
+                localStorage.setItem('pertasis_psy_selected_class', klsSelected);
+                isiDropdownSiswa(klsSelected, false);
             });
+
+            selectSiswa.addEventListener('change', function() {
+                localStorage.setItem('pertasis_psy_selected_student', this.value);
+            });
+
+            const mingguKePsy = document.getElementById('mingguKePsy');
+            if (mingguKePsy) {
+                mingguKePsy.addEventListener('input', function() {
+                    localStorage.setItem('pertasis_psy_minggu_ke', this.value);
+                });
+            }
+
+            const semesterPsy = document.getElementById('semesterPsy');
+            if (semesterPsy) {
+                semesterPsy.addEventListener('change', function() {
+                    localStorage.setItem('pertasis_psy_semester', this.value);
+                });
+            }
+
+            const btnClearCache = document.getElementById('btnClearCache');
+            if (btnClearCache) {
+                btnClearCache.addEventListener('click', function() {
+                    const keys = [
+                        'pertasis_siswa_data',
+                        'pertasis_psy_selected_class',
+                        'pertasis_psy_selected_student',
+                        'pertasis_psy_minggu_ke',
+                        'pertasis_psy_semester'
+                    ];
+                    keys.forEach(key => localStorage.removeItem(key));
+                    alert('Cache lokal berhasil dihapus. Halaman akan dimuat ulang.');
+                    window.location.reload();
+                });
+            }
 
             // 2. Real-time Calculation of Score & Status Category
             function HitungSkor() {
