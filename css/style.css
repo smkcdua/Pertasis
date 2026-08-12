@@ -118,6 +118,29 @@ input[type="text"], input[type="number"], select { width: 100%; padding: 10px; b
 .stats-value { font-family: 'Share Tech Mono', monospace; font-size: 24px; font-weight: bold; color: #2c3e50; margin: 0; line-height: 1.1; }
 .stats-sub { margin: 4px 0 0 0; font-size: 13px; color: #95a5a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+#observation-summary-card {
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+#observation-summary-card .stats-sub {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.65;
+    margin: 0;
+}
+
+#observation-summary-card .summary-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#observation-summary-card p {
+    margin: 0;
+}
+
 /* Generic Card */
 .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.06); margin-bottom: 20px; }
 .card-title-sm { margin: 0 0 14px 0; font-size: 14px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; }
@@ -153,4 +176,13 @@ input[type="text"], input[type="number"], select { width: 100%; padding: 10px; b
 
 @media (max-width: 420px) {
     .stats-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+    #observation-summary-card { padding: 18px; }
+}
+
+@media (max-width: 420px) {
+    #observation-summary-card { padding: 16px; }
+    #observation-summary-card .summary-header { gap: 6px; }
 }
