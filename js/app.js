@@ -1034,7 +1034,7 @@ function initHalamanResume() {
                     value: score,
                     metricType: 'psychology',
                     display: formatPsychologyLabel(rec.Hasil),
-                    activityName: 'Kesehatan & Psikologi'
+                    activityName: 'Psikologi'
                 };
             }
 
