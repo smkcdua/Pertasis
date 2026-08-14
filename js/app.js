@@ -243,13 +243,31 @@ async function loadScheduleList() {
 
 function parseJamRange(jamStr) {
     if (!jamStr) return null;
-    const s = String(jamStr).trim();
-    const parts = s.split('-').map(p => p.trim());
-    const toMinutes = t => {
-        const m = t.match(/(\d{1,2}):(\d{2})/);
-        if (!m) return null;
-        return parseInt(m[1],10)*60 + parseInt(m[2],10);
+
+    const normalizeJam = value => {
+        if (value === null || value === undefined) return '';
+        let s = String(value).trim().replace(/\s+/g, '');
+        s = s.replace(/,/g, '.');
+
+        // Normalisasi format seperti 8.05 -> 8:05, 8.05-9.10 -> 8:05-9:10
+        s = s.replace(/(\d{1,2})\.(\d{2})(?=(?:-|$))/g, '$1:$2');
+        s = s.replace(/(\d{1,2})\.(\d{2})\.(\d{2})/g, '$1:$2:$3');
+
+        return s;
     };
+
+    const s = normalizeJam(jamStr);
+    const parts = s.split('-').map(p => p.trim()).filter(Boolean);
+    const toMinutes = t => {
+        if (!t) return null;
+        const m = t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+        if (!m) return null;
+        const hours = parseInt(m[1], 10);
+        const minutes = parseInt(m[2], 10);
+        const seconds = m[3] ? parseInt(m[3], 10) : 0;
+        return hours * 60 + minutes + (seconds > 0 ? seconds / 60 : 0);
+    };
+
     const start = toMinutes(parts[0]);
     const end = parts[1] ? toMinutes(parts[1]) : null;
     return { start, end };
