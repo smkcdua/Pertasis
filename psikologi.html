@@ -492,9 +492,9 @@
                 </div>
             </div>
 
+            <button type="button" id="btnSetNormalScore" class="btn-submit-psy" style="background:#16a34a; margin-bottom:10px;">Set Semua Skor 4 (Anak Normal / Tidak Ada Masalah)</button>
             <!-- Submit Button -->
             <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Data Observasi ke Server BK</button>
-            <button type="button" id="btnClearCache" class="btn-submit-psy btn-clear-cache" style="background: #dc2626; margin-top: 10px;">Hapus Cache Lokal</button>
         </form>
     </div>
 
@@ -508,6 +508,7 @@
             const selectKelas = document.getElementById('selectKelasPsy');
             const selectSiswa = document.getElementById('selectSiswaPsy');
             const btnSubmit = document.getElementById('btnKirimPsikologi');
+            const btnSetNormalScore = document.getElementById('btnSetNormalScore');
 
             let dataSiswaGlobal = [];
 
@@ -624,19 +625,15 @@
                 });
             }
 
-            const btnClearCache = document.getElementById('btnClearCache');
-            if (btnClearCache) {
-                btnClearCache.addEventListener('click', function() {
-                    const keys = [
-                        'pertasis_siswa_data',
-                        'pertasis_psy_selected_class',
-                        'pertasis_psy_selected_student',
-                        'pertasis_psy_minggu_ke',
-                        'pertasis_psy_semester'
-                    ];
-                    keys.forEach(key => localStorage.removeItem(key));
-                    alert('Cache lokal berhasil dihapus. Halaman akan dimuat ulang.');
-                    window.location.reload();
+            if (btnSetNormalScore) {
+                btnSetNormalScore.addEventListener('click', function() {
+                    document.querySelectorAll('input[type="radio"][name^="q"]').forEach(radio => {
+                        if (radio.value === '4') {
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                    alert('Semua indikator observasi diisi dengan skor 4 sesuai kondisi normal.');
                 });
             }
 
