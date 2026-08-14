@@ -179,6 +179,95 @@ function formatTanggal(isoString) {
     });
 }
 
+function getTodayDateLabel() {
+    return new Date().toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
+function extractPertemuanNumber(value, fallback = 1) {
+    if (value === null || value === undefined || value === '') return fallback;
+
+    const raw = String(value).trim();
+    if (!raw) return fallback;
+
+    const direct = Number(raw);
+    if (Number.isInteger(direct) && String(raw).match(/^\d+$/)) {
+        return direct;
+    }
+
+    const match = raw.match(/(?:pertemuan|minggu)\s*ke?\s*(\d+)/i);
+    if (match && match[1]) {
+        const parsed = Number(match[1]);
+        return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    return fallback;
+}
+
+function buildPertemuanNumberMap(records) {
+    const orderMap = new Map();
+    const entries = (records || [])
+        .map(rec => ({
+            rec,
+            raw: String(rec && (rec.Minggu_Ke || rec.minggu_ke || rec.Pertemuan_Ke || rec.pertemuan_ke || '')).trim(),
+            timestamp: rec && rec.Timestamp ? new Date(rec.Timestamp) : null
+        }))
+        .filter(entry => entry.raw || (entry.timestamp && !isNaN(entry.timestamp.getTime())))
+        .sort((a, b) => {
+            const aTime = a.timestamp && !isNaN(a.timestamp.getTime()) ? a.timestamp.getTime() : 0;
+            const bTime = b.timestamp && !isNaN(b.timestamp.getTime()) ? b.timestamp.getTime() : 0;
+            return aTime - bTime;
+        });
+
+    let nextNumber = 1;
+    entries.forEach(({ rec, raw }) => {
+        const trimmed = raw;
+        if (!trimmed) return;
+
+        const direct = Number(trimmed);
+        if (String(trimmed).match(/^\d+$/) && Number.isInteger(direct)) {
+            if (!orderMap.has(trimmed)) {
+                orderMap.set(trimmed, direct);
+            }
+            nextNumber = Math.max(nextNumber, direct + 1);
+            return;
+        }
+
+        if (!orderMap.has(trimmed)) {
+            orderMap.set(trimmed, nextNumber);
+            nextNumber += 1;
+        }
+    });
+
+    return orderMap;
+}
+
+function getPertemuanNumber(rec, orderMap = new Map()) {
+    if (!rec) return NaN;
+    const raw = String(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke ?? '').trim();
+    if (!raw) return NaN;
+
+    const direct = Number(raw);
+    if (String(raw).match(/^\d+$/) && Number.isInteger(direct)) {
+        return direct;
+    }
+
+    if (orderMap.has(raw)) return orderMap.get(raw);
+
+    const fallback = extractPertemuanNumber(raw, NaN);
+    return Number.isFinite(fallback) ? fallback : NaN;
+}
+
+function normalizePertemuanValue(value) {
+    if (value === null || value === undefined) return '';
+    const trimmed = String(value).trim();
+    return trimmed;
+}
+
 async function fetchJSON(url, options) {
     const response = await fetch(url, options);
     if (!response.ok) {
@@ -292,6 +381,12 @@ function getTodayClasses() {
     if (!scheduleList || scheduleList.length === 0) return [];
     return scheduleList.filter(isNowInSchedule).map(s => s.nama).filter(Boolean);
 }
+
+// Alias backward-compatible untuk page resume / helper lama yang masih dipanggil
+function getCurrentClasses() {
+    return getTodayClasses();
+}
+
 function getNowClassesWithTime() {
     if (!scheduleList || scheduleList.length === 0) return [];
     return scheduleList.filter(isNowInSchedule).map(s => ({ nama: s.nama, jam: s.jam || '' }));
@@ -411,7 +506,13 @@ function initHalamanPencatatan() {
     const savedJenis = localStorage.getItem('pertasis_jenis_aktivitas');
     if (savedJenis && jenisAktivitasEl) jenisAktivitasEl.value = savedJenis;
     const savedMinggu = localStorage.getItem('pertasis_minggu_ke');
-    if (savedMinggu && mingguKeEl) mingguKeEl.value = savedMinggu;
+    if (mingguKeEl) {
+        if (savedMinggu) {
+            mingguKeEl.value = savedMinggu;
+        } else {
+            mingguKeEl.value = getTodayDateLabel();
+        }
+    }
     const savedSemester = localStorage.getItem('pertasis_semester');
     if (savedSemester && semesterEl) semesterEl.value = savedSemester;
 
@@ -557,11 +658,11 @@ function initHalamanPencatatan() {
         const kelas = selectKelas.value;
         const mode = modePencatatan.value;
         const jenisAktivitas = document.getElementById('jenisAktivitas').value;
-        const mingguKe = document.getElementById('mingguKe').value;
+        const mingguKe = normalizePertemuanValue(document.getElementById('mingguKe').value);
         const semester = document.getElementById('semester').value;
 
         if (!jenisAktivitas || !mingguKe || !semester) {
-            alert("Harap lengkapi Jenis Aktivitas, Minggu, dan Semester terlebih dahulu!");
+            alert("Harap lengkapi Jenis Aktivitas, Pertemuan, dan Semester terlebih dahulu!");
             return;
         }
 
@@ -710,6 +811,87 @@ function initHalamanResume() {
         return records.find(rec => isPsychologyActivity(rec.Jenis_Aktivitas)) || null;
     }
 
+    function getComparableActivityValue(rec) {
+        if (!rec) return null;
+
+        const jenis = String(rec.Jenis_Aktivitas || '').toLowerCase();
+        const hasil = String(rec.Hasil || '').trim();
+        if (!hasil) return null;
+
+        const timeMs = parseTimeToMs(hasil);
+        if (timeMs !== null) {
+            return {
+                value: timeMs,
+                isLowerBetter: true,
+                display: formatSpreadsheetValue(hasil),
+                label: jenis.includes('lari') ? 'Lari' : 'Waktu'
+            };
+        }
+
+        const psychScore = parsePsychologyScore(hasil);
+        if (psychScore !== null) {
+            return {
+                value: psychScore,
+                isLowerBetter: false,
+                display: String(psychScore),
+                label: 'Indeks'
+            };
+        }
+
+        const numeric = Number.parseFloat(String(hasil).replace(/[^0-9.\-]/g, ''));
+        if (!Number.isNaN(numeric)) {
+            return {
+                value: numeric,
+                isLowerBetter: !(jenis.includes('lari') || jenis.includes('push') || jenis.includes('sit')) ? false : false,
+                display: formatSpreadsheetValue(hasil),
+                label: 'Hasil'
+            };
+        }
+
+        return null;
+    }
+
+    function getActivityTrendSummary(studentName) {
+        const records = allResumeData
+            .filter(rec => rec.Nama_Siswa === studentName)
+            .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+
+        if (records.length === 0) return '';
+
+        const grouped = new Map();
+        records.forEach(rec => {
+            const key = String(rec.Jenis_Aktivitas || '').trim() || 'Umum';
+            if (!grouped.has(key)) grouped.set(key, []);
+            grouped.get(key).push(rec);
+        });
+
+        const summaries = [];
+
+        grouped.forEach((items, activityName) => {
+            if (items.length < 2) return;
+
+            const latest = items[0];
+            const previous = items[1];
+            const latestValue = getComparableActivityValue(latest);
+            const previousValue = getComparableActivityValue(previous);
+            if (!latestValue || !previousValue) return;
+
+            const better = latestValue.isLowerBetter
+                ? latestValue.value < previousValue.value
+                : latestValue.value > previousValue.value;
+
+            const currentDisplay = latestValue.display;
+            const previousDisplay = previousValue.display;
+            const statusText = better ? 'lebih baik' : 'lebih buruk';
+            const actionText = better ? 'Pertahankan pola latihan ini.' : 'Perkuat latihan dan konsistensi pada aktivitas ini.';
+            const shortName = activityName || 'Aktivitas';
+
+            summaries.push(`• <strong>${escapeHtml(shortName)}</strong>: ${escapeHtml(currentDisplay)} vs ${escapeHtml(previousDisplay)} (<strong>${statusText}</strong>). Saran: <strong>${actionText}</strong>`);
+        });
+
+        return summaries.join('<br>');
+    }
+
     function updateObservationSummary(studentName) {
         if (!observationSummaryCard || !observationSummaryText) return;
         if (!studentName) {
@@ -718,25 +900,17 @@ function initHalamanResume() {
             return;
         }
 
-        const psychRec = getLatestPsychologyRecord(studentName);
-        if (psychRec) {
-            const timestamp = formatTanggal(psychRec.Timestamp);
-            const label = psychRec.Jenis_Aktivitas || 'Observasi Guru';
-            const hasil = formatSpreadsheetValue(psychRec.Hasil);
-            const skor = formatPsychologyLabel(psychRec.Hasil);
-            observationSummaryCard.style.display = 'block';
-            observationSummaryText.innerHTML = `Terakhir: <strong>${timestamp}</strong><br>Jenis: <strong>${label}</strong><br>Index Observasi: <strong>${skor}</strong><br>Hasil catatan: <strong>${hasil}</strong>`;
-            return;
-        }
-
         const records = allResumeData
             .filter(rec => rec.Nama_Siswa === studentName)
             .sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-        if (records.length > 0) {
-            const latest = records[0];
-            const timestamp = formatTanggal(latest.Timestamp);
+
+        const latest = records[0];
+        const latestTrendString = getActivityTrendSummary(studentName);
+        const summaryHeader = latest ? `<strong>${escapeHtml(latest.Jenis_Aktivitas || 'Aktivitas')}</strong> terakhir: ${escapeHtml(formatSpreadsheetValue(latest.Hasil))}` : 'Belum ada catatan.';
+
+        if (latest) {
             observationSummaryCard.style.display = 'block';
-            observationSummaryText.innerHTML = `Belum ditemukan catatan observasi psikologi terbaru. Catatan terakhir siswa ini:<br><strong>${timestamp}</strong> - ${escapeHtml(latest.Jenis_Aktivitas || '-')} / ${escapeHtml(formatSpreadsheetValue(latest.Hasil))}`;
+            observationSummaryText.innerHTML = `${summaryHeader}<br>${latestTrendString || 'Belum ada perbandingan dua hasil terakhir yang cukup untuk dianalisa.'}`;
             return;
         }
 
@@ -751,14 +925,16 @@ function initHalamanResume() {
         const ctx = document.getElementById('fitnessChart');
         if (!ctx) return;
 
-        // 1. Kelompokkan data berdasarkan Minggu (1 sampai 16)
+        const pertemuanMap = buildPertemuanNumberMap(data);
+        const getMeetingNumber = rec => getPertemuanNumber(rec, pertemuanMap);
+
         const mingguSet = new Set();
         data.forEach(d => {
-            const m = parseInt(d.Minggu_Ke, 10);
-            if (!isNaN(m)) mingguSet.add(m);
+            const m = getMeetingNumber(d);
+            if (Number.isFinite(m)) mingguSet.add(m);
         });
         const mingguSorted = Array.from(mingguSet).sort((a, b) => a - b);
-        const labels = mingguSorted.map(m => `Minggu ${m}`);
+        const labels = mingguSorted.map(m => String(m));
 
         const selectedActivity = filterAktivitas.value;
         const isPsychologySelected = isPsychologyActivity(selectedActivity);
@@ -779,7 +955,7 @@ function initHalamanResume() {
             // Hitung rata-rata per minggu dari data terfilter
             const pointInfoData = [];
             const dataPoint = mingguSorted.map(m => {
-                const recs = data.filter(d => parseInt(d.Minggu_Ke, 10) === m);
+                const recs = data.filter(d => getMeetingNumber(d) === m);
                 if (recs.length === 0) {
                     pointInfoData.push({ value: null, display: null });
                     return null;
@@ -825,7 +1001,7 @@ function initHalamanResume() {
             siswaUnik.forEach((nama, idx) => {
                 const pointInfoData = [];
                 const dataPoint = mingguSorted.map(m => {
-                    const rec = data.find(d => d.Nama_Siswa === nama && parseInt(d.Minggu_Ke, 10) === m);
+                    const rec = data.find(d => d.Nama_Siswa === nama && getMeetingNumber(d) === m);
                     if (!rec) {
                         pointInfoData.push({ value: null, display: null });
                         return null;
@@ -868,7 +1044,7 @@ function initHalamanResume() {
         fitnessChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels.length > 0 ? labels : ['Minggu 1', 'Minggu 2', 'Minggu 3'],
+                labels: labels.length > 0 ? labels : ['1', '2', '3'],
                 datasets: datasets
             },
             options: {
@@ -1044,6 +1220,7 @@ function initHalamanResume() {
         const aktivitasFilter = filterAktivitas.value;
         const mingguFilter = filterMinggu.value;
         const semesterFilter = filterSemester.value;
+        const pertemuanMap = buildPertemuanNumberMap(allResumeData);
 
         let filtered = allResumeData.filter(rec => {
             if (q) {
@@ -1062,8 +1239,8 @@ function initHalamanResume() {
             }
 
             if (mingguFilter) {
-                const nomor = (mingguFilter.match(/\d+/) || [])[0];
-                if (String(rec.Minggu_Ke).trim() !== String(nomor)) return false;
+                const nomor = Number(String(mingguFilter).trim());
+                if (!Number.isFinite(nomor) || getPertemuanNumber(rec, pertemuanMap) !== nomor) return false;
             }
 
             if (semesterFilter) {
@@ -1087,7 +1264,8 @@ function initHalamanResume() {
         }
 
         tbody.innerHTML = data.map((rec, idx) => {
-            const periode = `Minggu ${rec.Minggu_Ke || '-'} &middot; ${semesterLabel(rec.Semester)}`;
+            const pertemuanKe = getPertemuanNumber(rec, buildPertemuanNumberMap(allResumeData));
+            const periode = `Pertemuan ke ${Number.isFinite(pertemuanKe) ? pertemuanKe : (rec.Minggu_Ke || '-')} &middot; ${semesterLabel(rec.Semester)}`;
             const kelasSedang = getCurrentClasses();
             const inClassNow = kelasSedang.includes(rec._Kelas) ? 'Ya' : '';
             return `
