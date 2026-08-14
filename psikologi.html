@@ -321,7 +321,7 @@
                 </div>
                 <div>
                     <label for="mingguKePsy">Minggu Ke-</label>
-                    <input type="number" id="mingguKePsy" min="1" max="52" value="1" required>
+                    <input type="text" id="mingguKePsy" required placeholder="Contoh: Jumat, 14 Agustus 2026">
                 </div>
                 <div>
                     <label for="semesterPsy">Semester</label>
@@ -545,8 +545,13 @@
 
                 const savedWeek = localStorage.getItem('pertasis_psy_minggu_ke');
                 const weekEl = document.getElementById('mingguKePsy');
-                if (weekEl && savedWeek) {
-                    weekEl.value = savedWeek;
+                if (weekEl) {
+                    weekEl.value = savedWeek || new Date().toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
                 }
 
                 const savedSemester = localStorage.getItem('pertasis_psy_semester');
@@ -701,7 +706,7 @@
 
                 const idSiswa = selectSiswa.value;
                 const namaSiswa = selectSiswa.options[selectSiswa.selectedIndex]?.dataset.nama || idSiswa;
-                const mingguKe = document.getElementById('mingguKePsy').value;
+                const mingguKe = normalizePertemuanValue(document.getElementById('mingguKePsy').value);
                 const semester = document.getElementById('semesterPsy').value;
                 const catatan = document.getElementById('catatanEsai').value.trim();
 
