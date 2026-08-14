@@ -25,6 +25,24 @@ function setCachedJson(key, value) {
     }
 }
 
+function clearLocalAppCache() {
+    const cacheKeys = [
+        'pertasis_schedule_list',
+        'pertasis_siswa_data',
+        'pertasis_resume_data',
+        'pertasis_psy_selected_class',
+        'pertasis_psy_selected_student',
+        'pertasis_psy_minggu_ke',
+        'pertasis_psy_semester',
+        'pertasis_selected_class',
+        'pertasis_mode_pencatatan',
+        'pertasis_jenis_aktivitas',
+        'pertasis_minggu_ke',
+        'pertasis_semester'
+    ];
+    cacheKeys.forEach(key => localStorage.removeItem(key));
+}
+
 // ==========================================================
 // UTILITAS BERSAMA (dipakai di kedua halaman)
 // ==========================================================
@@ -744,12 +762,14 @@ function initHalamanResume() {
 
     const chartModeSelect = document.getElementById('chart-mode');
     const filterSearch = document.getElementById('filter-search');
+    const filterKelas = document.getElementById('filter-kelas');
     const filterSiswa = document.getElementById('filter-siswa');
     const filterAktivitas = document.getElementById('filter-aktivitas');
     const filterMinggu = document.getElementById('filter-minggu');
     const filterSemester = document.getElementById('filter-semester');
     const observationSummaryCard = document.getElementById('observation-summary-card');
     const observationSummaryText = document.getElementById('observation-summary-text');
+    const btnClearLocalCache = document.getElementById('btn-clear-local-cache');
 
     function normalizeActivityName(value) {
         return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -782,6 +802,20 @@ function initHalamanResume() {
     if (chartModeSelect) {
         chartModeSelect.addEventListener('change', applyFiltersAndRender);
     }
+    if (filterKelas) {
+        filterKelas.addEventListener('change', () => {
+            const currentSelectedStudent = filterSiswa ? filterSiswa.value : '';
+            renderStudentOptions();
+            if (filterSiswa && currentSelectedStudent && [...filterSiswa.options].some(opt => opt.value === currentSelectedStudent)) {
+                filterSiswa.value = currentSelectedStudent;
+            } else if (filterSiswa) {
+                filterSiswa.value = '';
+            }
+            updateObservationSummary(filterSiswa ? filterSiswa.value : '');
+            applyFiltersAndRender();
+        });
+    }
+
     if (filterSiswa) {
         filterSiswa.addEventListener('change', () => {
             updateObservationSummary(filterSiswa.value);
@@ -789,10 +823,37 @@ function initHalamanResume() {
         });
     }
 
+    function renderClassOptions() {
+        if (!filterKelas) return;
+        const selected = filterKelas.value;
+        const kelasUnik = [...new Set(allResumeData.map(d => d._Kelas).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id'));
+
+        filterKelas.innerHTML = '<option value="">Pilih Kelas</option>';
+        kelasUnik.forEach(kelas => {
+            const opt = document.createElement('option');
+            opt.value = kelas;
+            opt.textContent = kelas;
+            filterKelas.appendChild(opt);
+        });
+
+        if (selected && kelasUnik.includes(selected)) {
+            filterKelas.value = selected;
+        } else if (selected && !kelasUnik.includes(selected)) {
+            filterKelas.value = '';
+        }
+    }
+
     function renderStudentOptions() {
         if (!filterSiswa) return;
         const selected = filterSiswa.value;
-        const siswaUnik = [...new Set(allResumeData.map(d => d.Nama_Siswa).filter(Boolean))].sort((a,b)=>a.localeCompare(b, 'id'));
+        const kelasFilter = filterKelas ? filterKelas.value : '';
+        const siswaUnik = [...new Set(
+            allResumeData
+                .filter(rec => !kelasFilter || rec._Kelas === kelasFilter)
+                .map(d => d.Nama_Siswa)
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, 'id'));
+
         filterSiswa.innerHTML = '<option value="">Pilih Nama Siswa</option>';
         siswaUnik.forEach(name => {
             const opt = document.createElement('option');
@@ -800,7 +861,12 @@ function initHalamanResume() {
             opt.textContent = name;
             filterSiswa.appendChild(opt);
         });
-        if (selected) filterSiswa.value = selected;
+
+        if (selected && siswaUnik.includes(selected)) {
+            filterSiswa.value = selected;
+        } else {
+            filterSiswa.value = '';
+        }
     }
 
     function getLatestPsychologyRecord(studentName) {
@@ -1252,6 +1318,7 @@ function initHalamanResume() {
                 }));
 
             computeAndRenderStats();
+            renderClassOptions();
             renderStudentOptions();
             updateObservationSummary(filterSiswa ? filterSiswa.value : '');
             applyFiltersAndRender();
@@ -1328,6 +1395,10 @@ function initHalamanResume() {
                 if (!gabungan.includes(q)) return false;
             }
 
+            if (filterKelas && filterKelas.value) {
+                if (rec._Kelas !== filterKelas.value) return false;
+            }
+
             if (filterSiswa && filterSiswa.value) {
                 if (rec.Nama_Siswa !== filterSiswa.value) return false;
             }
@@ -1394,6 +1465,13 @@ function initHalamanResume() {
     // 4. EVENT LISTENERS
     // ----------------------------------------
     if (btnRefresh) btnRefresh.addEventListener('click', muatDataResume);
+    if (btnClearLocalCache) {
+        btnClearLocalCache.addEventListener('click', () => {
+            clearLocalAppCache();
+            alert('Cache lokal berhasil dihapus. Data akan diambil ulang dari Google Sheets.');
+            window.location.reload();
+        });
+    }
     filterSearch.addEventListener('input', applyFiltersAndRender);
     filterAktivitas.addEventListener('change', applyFiltersAndRender);
     filterMinggu.addEventListener('change', applyFiltersAndRender);
