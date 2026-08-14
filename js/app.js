@@ -937,91 +937,191 @@ function initHalamanResume() {
         const labels = mingguSorted.map(m => String(m));
 
         const selectedActivity = filterAktivitas.value;
-        const isPsychologySelected = isPsychologyActivity(selectedActivity);
-
-        // 2. Tentukan apakah jenis aktivitas dominan bertipe waktu (Lari) atau repetisi
-        let isTimeBased = false;
-        if (!isPsychologySelected && selectedActivity.toLowerCase().includes('lari')) {
-            isTimeBased = true;
-        } else if (!isPsychologySelected && data.length > 0 && String(data[0].Hasil || '').includes(':')) {
-            isTimeBased = true;
-        }
-
-        // 3. Susun Dataset (Rata-rata atau Per Siswa)
         const modeChart = chartModeSelect ? chartModeSelect.value : 'rata-rata';
         const datasets = [];
 
-        if (modeChart === 'rata-rata') {
-            // Hitung rata-rata per minggu dari data terfilter
-            const pointInfoData = [];
-            const dataPoint = mingguSorted.map(m => {
-                const recs = data.filter(d => getMeetingNumber(d) === m);
-                if (recs.length === 0) {
-                    pointInfoData.push({ value: null, display: null });
-                    return null;
+        const matchesSelectedActivity = rec => {
+            if (!selectedActivity || selectedActivity === 'Semua Aktivitas') return true;
+            const recName = normalizeActivityName(rec && rec.Jenis_Aktivitas ? rec.Jenis_Aktivitas : '');
+            const filterName = normalizeActivityName(selectedActivity);
+
+            if (!recName || !filterName) return true;
+            if (recName.includes(filterName)) return true;
+
+            if (filterName.includes('lari') && recName.includes('lari')) return true;
+            if (filterName.includes('push') && recName.includes('push')) return true;
+            if (filterName.includes('sit') && recName.includes('sit')) return true;
+            if ((filterName.includes('kesehatan') || filterName.includes('psikologi')) && (recName.includes('kesehatan') || recName.includes('psikologi'))) return true;
+            return false;
+        };
+
+        const getMetricInfo = rec => {
+            if (!rec) return null;
+
+            const jenis = String(rec.Jenis_Aktivitas || '').toLowerCase();
+            const normalizedJenis = normalizeActivityName(rec.Jenis_Aktivitas);
+
+            if (isPsychologyActivity(rec.Jenis_Aktivitas)) {
+                const score = parsePsychologyScore(rec.Hasil);
+                if (score === null) return null;
+                return {
+                    value: score,
+                    metricType: 'psychology',
+                    display: formatPsychologyLabel(rec.Hasil),
+                    activityName: 'Kesehatan & Psikologi'
+                };
+            }
+
+            if (normalizedJenis.includes('lari') || jenis.includes('lari')) {
+                const ms = parseTimeToMs(rec.Hasil);
+                if (ms !== null) {
+                    return {
+                        value: ms,
+                        metricType: 'time',
+                        display: formatSpreadsheetValue(rec.Hasil),
+                        activityName: 'Lari'
+                    };
                 }
+            }
 
-                const total = recs.reduce((sum, r) => {
-                    if (isPsychologySelected) {
-                        const score = parsePsychologyScore(r.Hasil);
-                        return sum + (score !== null ? score : 0);
-                    }
+            if (normalizedJenis.includes('push')) {
+                const value = Number.parseFloat(String(rec.Hasil || '').replace(/[^0-9.\-]/g, ''));
+                if (!Number.isNaN(value)) {
+                    return {
+                        value,
+                        metricType: 'number',
+                        display: formatSpreadsheetValue(rec.Hasil),
+                        activityName: 'Push Up'
+                    };
+                }
+            }
 
-                    if (isTimeBased) {
-                        const ms = parseTimeToMs(r.Hasil);
-                        return sum + (ms !== null ? ms : 0);
-                    } else {
-                        return sum + (parseInt(r.Hasil, 10) || 0);
-                    }
-                }, 0);
+            if (normalizedJenis.includes('sit')) {
+                const value = Number.parseFloat(String(rec.Hasil || '').replace(/[^0-9.\-]/g, ''));
+                if (!Number.isNaN(value)) {
+                    return {
+                        value,
+                        metricType: 'number',
+                        display: formatSpreadsheetValue(rec.Hasil),
+                        activityName: 'Sit Up'
+                    };
+                }
+            }
 
-                const avgValue = recs.length > 0 ? total / recs.length : null;
-                const displayValue = recs.find(r => r.Hasil) ? (isPsychologySelected ? formatPsychologyLabel(recs.find(r => r.Hasil).Hasil) : formatSpreadsheetValue(recs.find(r => r.Hasil).Hasil)) : null;
-                pointInfoData.push({ value: avgValue, display: displayValue });
-                return avgValue;
+            const numeric = Number.parseFloat(String(rec.Hasil || '').replace(/[^0-9.\-]/g, ''));
+            if (!Number.isNaN(numeric)) {
+                return {
+                    value: numeric,
+                    metricType: 'number',
+                    display: formatSpreadsheetValue(rec.Hasil),
+                    activityName: String(rec.Jenis_Aktivitas || 'Aktivitas')
+                };
+            }
+
+            return null;
+        };
+
+        const getYTitle = metricType => {
+            if (metricType === 'time') return 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik';
+            if (metricType === 'psychology') return 'Skor Psikologi (0-20)';
+            return 'Jumlah Repetisi / Kali';
+        };
+
+        const getDisplayValue = (value, metricType) => {
+            if (metricType === 'time') return formatChartTime(value);
+            if (metricType === 'psychology') return value !== null && value !== undefined ? Number(value).toFixed(1) : '-';
+            return value !== null && value !== undefined ? Number(value).toFixed(1) : '-';
+        };
+
+        const chartRecords = (selectedActivity && selectedActivity !== 'Semua Aktivitas')
+            ? data.filter(matchesSelectedActivity)
+            : data;
+
+        if (modeChart === 'rata-rata') {
+            const activityGroups = new Map();
+            chartRecords.forEach(rec => {
+                const metric = getMetricInfo(rec);
+                if (!metric) return;
+                const key = metric.activityName;
+                if (!activityGroups.has(key)) activityGroups.set(key, []);
+                activityGroups.get(key).push(rec);
             });
 
-            datasets.push({
-                label: isPsychologySelected ? 'Rata-rata Skor Kesehatan & Psikologi' : (isTimeBased ? 'Rata-rata Waktu Lari' : 'Rata-rata Repetisi'),
-                data: dataPoint,
-                pointInfo: pointInfoData,
-                borderColor: '#3498db',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                borderWidth: 3,
-                tension: 0.3,
-                fill: true,
-                pointBackgroundColor: '#2c3e50',
-                pointRadius: 5
-            });
+            if (activityGroups.size === 0) {
+                datasets.push({
+                    label: 'Tidak ada data',
+                    data: Array(mingguSorted.length || 1).fill(null),
+                    pointInfo: Array(mingguSorted.length || 1).fill({ value: null, display: '-' }),
+                    borderColor: '#94a3b8',
+                    backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 4,
+                    metricType: 'number'
+                });
+            } else {
+                activityGroups.forEach((groupRecords, activityName) => {
+                    const metricTypeByGroup = getMetricInfo(groupRecords[0])?.metricType || 'number';
+                    const pointInfoData = [];
+                    const dataPoint = mingguSorted.map(m => {
+                        const recs = groupRecords.filter(d => getMeetingNumber(d) === m);
+                        if (recs.length === 0) {
+                            pointInfoData.push({ value: null, display: null });
+                            return null;
+                        }
+
+                        const values = recs
+                            .map(getMetricInfo)
+                            .filter(Boolean)
+                            .map(v => v.value);
+
+                        if (values.length === 0) {
+                            pointInfoData.push({ value: null, display: null });
+                            return null;
+                        }
+
+                        const avgValue = values.reduce((sum, value) => sum + value, 0) / values.length;
+                        pointInfoData.push({ value: avgValue, display: getDisplayValue(avgValue, metricTypeByGroup) });
+                        return avgValue;
+                    });
+
+                    datasets.push({
+                        label: `${activityName} (Rata-rata)`,
+                        data: dataPoint,
+                        pointInfo: pointInfoData,
+                        borderColor: activityName === 'Lari' ? '#3498db' : activityName === 'Push Up' ? '#27ae60' : activityName === 'Sit Up' ? '#e67e22' : '#8b5cf6',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: false,
+                        pointBackgroundColor: '#2c3e50',
+                        pointRadius: 5,
+                        metricType: metricTypeByGroup
+                    });
+                });
+            }
         } else {
-            // Mode Individu: Ambil maksimal 5 siswa pertama agar grafik tidak semrawut
-            const siswaUnik = [...new Set(data.map(d => d.Nama_Siswa))].slice(0, 5);
+            const siswaUnik = [...new Set(chartRecords.map(d => d.Nama_Siswa))].slice(0, 5);
             const warnaPalette = ['#3498db', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6'];
 
             siswaUnik.forEach((nama, idx) => {
                 const pointInfoData = [];
                 const dataPoint = mingguSorted.map(m => {
-                    const rec = data.find(d => d.Nama_Siswa === nama && getMeetingNumber(d) === m);
+                    const rec = chartRecords.find(d => d.Nama_Siswa === nama && getMeetingNumber(d) === m);
                     if (!rec) {
                         pointInfoData.push({ value: null, display: null });
                         return null;
                     }
 
-                    if (isPsychologySelected) {
-                        const score = parsePsychologyScore(rec.Hasil);
-                        pointInfoData.push({ value: score, display: formatPsychologyLabel(rec.Hasil) });
-                        return score !== null ? score : null;
-                    }
-
-                    if (isTimeBased) {
-                        const ms = parseTimeToMs(rec.Hasil);
-                        pointInfoData.push({ value: ms, display: formatSpreadsheetValue(rec.Hasil) });
-                        return ms !== null ? ms : null;
-                    } else {
-                        pointInfoData.push({ value: parseInt(rec.Hasil, 10) || null, display: formatSpreadsheetValue(rec.Hasil) });
-                        return parseInt(rec.Hasil, 10) || null;
-                    }
+                    const metric = getMetricInfo(rec);
+                    pointInfoData.push({ value: metric ? metric.value : null, display: metric ? metric.display : null });
+                    return metric ? metric.value : null;
                 });
+
+                const metricType = chartRecords
+                    .map(getMetricInfo)
+                    .find(Boolean)?.metricType || 'number';
 
                 datasets.push({
                     label: nama,
@@ -1031,7 +1131,8 @@ function initHalamanResume() {
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
-                    pointRadius: 4
+                    pointRadius: 4,
+                    metricType
                 });
             });
         }
@@ -1055,18 +1156,17 @@ function initHalamanResume() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                let label = context.dataset.label || '';
+                                const dataset = context.dataset || {};
+                                const metricType = dataset.metricType || 'number';
+                                let label = dataset.label || '';
                                 let val = context.parsed.y;
-                                const pointInfo = context.dataset.pointInfo?.[context.dataIndex] || null;
-                                if (isPsychologySelected) {
-                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatPsychologyLabel(val);
-                                    return `${label}: ${displayValue}`;
-                                }
-                                if (isTimeBased) {
-                                    const displayValue = pointInfo && pointInfo.display ? pointInfo.display : formatChartTime(val);
-                                    return `${label}: ${displayValue}`;
-                                }
-                                return `${label}: ${val} Kali`;
+                                const pointInfo = dataset.pointInfo?.[context.dataIndex] || null;
+                                const displayValue = pointInfo && pointInfo.display ? pointInfo.display : (() => {
+                                    if (metricType === 'psychology') return formatPsychologyLabel(val);
+                                    if (metricType === 'time') return formatChartTime(val);
+                                    return `${val} Kali`;
+                                })();
+                                return `${label}: ${displayValue}`;
                             }
                         }
                     }
@@ -1074,27 +1174,27 @@ function initHalamanResume() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMin: isPsychologySelected ? 0 : 0,
                         ticks: {
-                            stepSize: isPsychologySelected ? 1 : undefined,
+                            stepSize: datasets.some(ds => ds.metricType === 'psychology') ? 1 : undefined,
                             callback: function(value) {
-                                if (isPsychologySelected) {
-                                    return value;
+                                const dsMetricType = datasets[0]?.metricType || 'number';
+                                if (dsMetricType === 'psychology') return value;
+                                if (dsMetricType === 'time') {
+                                    const matchingPoint = datasets.flatMap(ds => ds.pointInfo || []).find(entry => entry && entry.value === value);
+                                    if (matchingPoint && matchingPoint.display) return matchingPoint.display;
+                                    return formatChartTime(value);
                                 }
-                                if (!isTimeBased) return value;
-                                const matchingPoint = datasets.flatMap(ds => ds.pointInfo || []).find(entry => entry && entry.value === value);
-                                if (matchingPoint && matchingPoint.display) {
-                                    return matchingPoint.display;
-                                }
-                                return formatChartTime(value);
+                                return value;
                             }
                         },
                         title: {
                             display: true,
-                            text: isPsychologySelected ? 'Skor Psikologi (0-20)' : (isTimeBased ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali')
+                            text: datasets[0]?.metricType === 'psychology'
+                                ? 'Skor Psikologi (0-20)'
+                                : (datasets[0]?.metricType === 'time' ? 'Waktu (MM:SS:mmm) - Lebih Rendah Lebih Baik' : 'Jumlah Repetisi / Kali')
                         },
-                        min: isPsychologySelected ? 0 : undefined,
-                        max: isPsychologySelected ? 20 : undefined
+                        min: datasets.some(ds => ds.metricType === 'psychology') ? 0 : undefined,
+                        max: datasets.some(ds => ds.metricType === 'psychology') ? 20 : undefined
                     }
                 }
             }
