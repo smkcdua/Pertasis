@@ -1148,7 +1148,15 @@ function initHalamanResume() {
                         }
 
                         const avgValue = values.reduce((sum, value) => sum + value, 0) / values.length;
-                        pointInfoData.push({ value: avgValue, display: getDisplayValue(avgValue, metricTypeByGroup) });
+                        const dates = [...new Set(recs
+                            .map(rec => rec.Timestamp)
+                            .filter(Boolean)
+                            .map(timestamp => formatTanggal(timestamp)))];
+                        pointInfoData.push({
+                            value: avgValue,
+                            display: getDisplayValue(avgValue, metricTypeByGroup),
+                            date: dates.join(', ')
+                        });
                         return avgValue;
                     });
 
@@ -1181,7 +1189,11 @@ function initHalamanResume() {
                     }
 
                     const metric = getMetricInfo(rec);
-                    pointInfoData.push({ value: metric ? metric.value : null, display: metric ? metric.display : null });
+                    pointInfoData.push({
+                        value: metric ? metric.value : null,
+                        display: metric ? metric.display : null,
+                        date: rec.Timestamp ? formatTanggal(rec.Timestamp) : ''
+                    });
                     return metric ? metric.value : null;
                 });
 
@@ -1233,6 +1245,10 @@ function initHalamanResume() {
                                     return `${val} Kali`;
                                 })();
                                 return `${label}: ${displayValue}`;
+                            },
+                            afterLabel: function(context) {
+                                const pointInfo = context.dataset?.pointInfo?.[context.dataIndex];
+                                return pointInfo?.date ? `Tanggal: ${pointInfo.date}` : '';
                             }
                         }
                     }
