@@ -1148,14 +1148,13 @@ function initHalamanResume() {
                         }
 
                         const avgValue = values.reduce((sum, value) => sum + value, 0) / values.length;
-                        const dates = [...new Set(recs
-                            .map(rec => rec.Timestamp)
-                            .filter(Boolean)
-                            .map(timestamp => formatTanggal(timestamp)))];
+                        const mingguValues = [...new Set(recs
+                            .map(rec => normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke))
+                            .filter(Boolean))];
                         pointInfoData.push({
                             value: avgValue,
                             display: getDisplayValue(avgValue, metricTypeByGroup),
-                            date: dates.join(', ')
+                            mingguKe: mingguValues.join(', ')
                         });
                         return avgValue;
                     });
@@ -1192,7 +1191,7 @@ function initHalamanResume() {
                     pointInfoData.push({
                         value: metric ? metric.value : null,
                         display: metric ? metric.display : null,
-                        date: rec.Timestamp ? formatTanggal(rec.Timestamp) : ''
+                        mingguKe: normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke)
                     });
                     return metric ? metric.value : null;
                 });
@@ -1248,7 +1247,7 @@ function initHalamanResume() {
                             },
                             afterLabel: function(context) {
                                 const pointInfo = context.dataset?.pointInfo?.[context.dataIndex];
-                                return pointInfo?.date ? `Tanggal: ${pointInfo.date}` : '';
+                                return pointInfo?.mingguKe ? `Minggu ke: ${pointInfo.mingguKe}` : '';
                             }
                         }
                     }
