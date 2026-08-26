@@ -100,6 +100,8 @@ input[type="text"], input[type="number"], select { width: 100%; padding: 10px; b
 .btn-primary { background-color: #3498db; color: #fff; }
 .btn-primary:hover { background-color: #2980b9; }
 .btn-primary:disabled { background-color: #95a5a6; cursor: not-allowed; }
+.btn-export { background-color: #16805b; color: #fff; }
+.btn-export:hover { background-color: #126b4c; }
 .btn-icon { width: 16px; height: 16px; }
 .btn-primary.is-loading .btn-icon { animation: spin 0.8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -172,6 +174,12 @@ input[type="text"], input[type="number"], select { width: 100%; padding: 10px; b
     .filter-row .form-group, .filter-row .form-group.flex-grow { flex: 1 1 100%; }
     .dashboard-header { flex-direction: column; align-items: stretch; }
     .dashboard-header .btn { width: 100%; justify-content: center; }
+}
+
+@media print {
+    body { background: #fff; padding: 0; }
+    .navbar, .footer, .dashboard-header, .stats-grid, .filter-card,
+    .summary-card, .chart-card, .table-card { display: none !important; }
 }
 
 @media (max-width: 420px) {
