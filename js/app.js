@@ -770,6 +770,7 @@ function initHalamanResume() {
     const observationSummaryCard = document.getElementById('observation-summary-card');
     const observationSummaryText = document.getElementById('observation-summary-text');
     const btnClearLocalCache = document.getElementById('btn-clear-local-cache');
+    const btnExportPdf = document.getElementById('btn-export-pdf');
 
     function normalizeActivityName(value) {
         return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -1470,6 +1471,80 @@ function initHalamanResume() {
         tableInfo.textContent = `Menampilkan ${data.length} data.`;
     }
 
+    function exportPdfReport() {
+        const kelas = filterKelas ? filterKelas.value : '';
+        const minggu = filterMinggu ? filterMinggu.value : '';
+
+        if (!kelas || !minggu) {
+            alert('Pilih kelas dan pertemuan terlebih dahulu untuk membuat laporan PDF.');
+            return;
+        }
+
+        const pertemuanMap = buildPertemuanNumberMap(allResumeData);
+        const nomorPertemuan = Number(minggu);
+        const reportData = allResumeData
+            .filter(rec => rec._Kelas === kelas && getPertemuanNumber(rec, pertemuanMap) === nomorPertemuan)
+            .sort((a, b) => {
+                const studentOrder = String(a.Nama_Siswa || '').localeCompare(String(b.Nama_Siswa || ''), 'id');
+                if (studentOrder !== 0) return studentOrder;
+                return String(a.Jenis_Aktivitas || '').localeCompare(String(b.Jenis_Aktivitas || ''), 'id');
+            });
+
+        if (reportData.length === 0) {
+            alert('Tidak ada aktivitas untuk kelas dan pertemuan yang dipilih.');
+            return;
+        }
+
+        const reportRows = reportData.map((rec, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(rec.Nama_Siswa || '-')}</td>
+                <td>${escapeHtml(rec.Jenis_Aktivitas || '-')}</td>
+                <td class="result">${escapeHtml(formatSpreadsheetValue(rec.Hasil))}</td>
+                <td>${escapeHtml(formatTanggal(rec.Timestamp))}</td>
+                <td>${escapeHtml(semesterLabel(rec.Semester))}</td>
+            </tr>
+        `).join('');
+
+        const reportWindow = window.open('', '_blank');
+        if (!reportWindow) {
+            alert('Jendela laporan diblokir browser. Izinkan pop-up untuk mengekspor PDF.');
+            return;
+        }
+
+        reportWindow.document.write(`<!DOCTYPE html>
+            <html lang="id">
+            <head>
+                <meta charset="UTF-8">
+                <title>Laporan Aktivitas - ${escapeHtml(kelas)} - Pertemuan ${nomorPertemuan}</title>
+                <style>
+                    * { box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; color: #1f2937; margin: 32px; font-size: 12px; }
+                    h1 { margin: 0 0 6px; font-size: 20px; }
+                    .meta { color: #4b5563; margin-bottom: 20px; line-height: 1.6; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background: #e8f1f8; color: #1f3b53; text-align: left; }
+                    th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; }
+                    td.result { font-weight: 700; }
+                    .total { margin-top: 12px; text-align: right; color: #4b5563; }
+                    @media print { body { margin: 12mm; } }
+                </style>
+            </head>
+            <body>
+                <h1>Laporan Semua Aktivitas Siswa</h1>
+                <div class="meta"><strong>Kelas:</strong> ${escapeHtml(kelas)}<br><strong>Pertemuan:</strong> ke-${nomorPertemuan}<br><strong>Dicetak:</strong> ${escapeHtml(getTodayDateLabel())}</div>
+                <table>
+                    <thead><tr><th>No</th><th>Nama Siswa</th><th>Aktivitas</th><th>Hasil</th><th>Tanggal Rekam</th><th>Semester</th></tr></thead>
+                    <tbody>${reportRows}</tbody>
+                </table>
+                <div class="total">Total catatan: ${reportData.length}</div>
+            </body>
+            </html>`);
+        reportWindow.document.close();
+        reportWindow.focus();
+        reportWindow.print();
+    }
+
     function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
@@ -1480,6 +1555,7 @@ function initHalamanResume() {
     // 4. EVENT LISTENERS
     // ----------------------------------------
     if (btnRefresh) btnRefresh.addEventListener('click', muatDataResume);
+    if (btnExportPdf) btnExportPdf.addEventListener('click', exportPdfReport);
     if (btnClearLocalCache) {
         btnClearLocalCache.addEventListener('click', () => {
             clearLocalAppCache();
