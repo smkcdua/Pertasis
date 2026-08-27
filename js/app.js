@@ -1,7 +1,7 @@
 // ==========================================================
 // KONFIGURASI
 // ==========================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbwIHdFBw5dchWdf-6s9RFpLy91bjBR0aM6DXbvdgCGu2MFTPB7_qtXtnLc6bjW1wGrk/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby2uB31a8YTqTubf9x8PnR8IqwpM3SBXB07CurMki0CgPN4geWoytAjp4zkHOhHdpWo/exec";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 jam
 
 function getCachedJson(key, maxAgeMs) {
