@@ -921,14 +921,19 @@ function initHalamanResume() {
     function renderDateOptions() {
         if (!filterMinggu) return;
         const selected = filterMinggu.value;
-        const dates = [...new Set(allResumeData.map(getAssessmentDateKey).filter(Boolean))]
-            .sort((a, b) => new Date(a) - new Date(b));
+        const dateOptions = new Map();
+        allResumeData.forEach(rec => {
+            const dateKey = getAssessmentDateKey(rec);
+            if (!dateKey || dateOptions.has(dateKey)) return;
+            dateOptions.set(dateKey, formatRecordDate(`${dateKey}T00:00:00`));
+        });
+        const dates = [...dateOptions.keys()].sort((a, b) => a.localeCompare(b));
 
         filterMinggu.innerHTML = '<option value="">Semua Tanggal</option>';
         dates.forEach(dateKey => {
             const opt = document.createElement('option');
             opt.value = dateKey;
-            opt.textContent = formatRecordDate(`${dateKey}T00:00:00`);
+            opt.textContent = dateOptions.get(dateKey);
             filterMinggu.appendChild(opt);
         });
 
