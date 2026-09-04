@@ -61,19 +61,28 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Mode Pencatatan</label>
+                <label>Mapel</label>
                 <select id="modePencatatan" required>
-                    <option value="Pengetahuan">Pengetahuan (Kognitif)</option>
-                    <option value="Keterampilan">Keterampilan (Psikomotor)</option>
-                    <option value="Sikap">Sikap (Afektif)</option>
+                    <option value="Pendidikan Agama dan Budi Pekerti">Pendidikan Agama dan Budi Pekerti</option>
+                    <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                    <option value="Matematika">Matematika</option>
+                    <option value="Bahasa Inggris">Bahasa Inggris</option>
+                    <option value="Sejarah">Sejarah</option>
+                    <option value="Pendidikan Jasmani, Olahraga, dan Kesehatan">Pendidikan Jasmani, Olahraga, dan Kesehatan</option>
+                    <option value="Seni Budaya">Seni Budaya</option>
+                    <option value="Informatika">Informatika</option>
+                    <option value="Projek Kreatif dan Kewirausahaan">Projek Kreatif dan Kewirausahaan</option>
+                    <option value="Dasar-Dasar Program Keahlian">Dasar-Dasar Program Keahlian</option>
+                    <option value="Konsentrasi Keahlian">Konsentrasi Keahlian</option>
                 </select>
             </div>
         </div>
 
         <div class="form-group-inline">
             <div class="form-group">
-                <label>Jenis Aktivitas</label>
-                <input type="text" id="jenisAktivitas" placeholder="Contoh: Passing Bawah Bola Voli" required>
+                <label>Jenis Penilaian</label>
+                <input type="text" id="jenisAktivitas" placeholder="Contoh: Ulangan Harian ke 1" required>
             </div>
             <div class="form-group">
                 <label>Minggu Ke-</label>
@@ -119,8 +128,22 @@
             document.getElementById('currentTimeDisplay').textContent =
                 now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
+
+        function setCurrentAssessmentDate() {
+            const mingguKe = document.getElementById('mingguKe');
+            if (!mingguKe.value.trim()) {
+                mingguKe.value = new Date().toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+        }
+
         setInterval(updateClock, 1000);
         updateClock();
+        setCurrentAssessmentDate();
 
         // ============================================================
         // HELPER: cari nilai field kelas di sebuah objek baris, apapun
@@ -242,7 +265,7 @@
         }
 
         // ============================================================
-        // KIRIM SEMUA NILAI KE SPREADSHEET (sheet: catat_nilai)
+        // KIRIM SEMUA NILAI KE SPREADSHEET (sheet: Catat_Nilai)
         // ============================================================
         async function kirimSemuaNilai() {
             const statusEl = document.getElementById('statusKirim');

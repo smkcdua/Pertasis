@@ -135,17 +135,17 @@ function doPost(e) {
 }
 
 // ------------------------------------------------------------
-// BARU: simpan nilai kolektif ke sheet "catat_nilai"
-// Payload dari catat_nilai.html:
+// Simpan nilai kolektif ke sheet "Catat_Nilai"
+// Payload dari nilai.html:
 // {
 //   action: 'submitNilai', kelas, semester, mingguKe, mode, jenisAktivitas,
 //   records: [{ nis, nama, nilai, predikat }, ...]
 // }
 // ------------------------------------------------------------
 function simpanCatatNilai(ss, params) {
-  let sheet = ss.getSheetByName("catat_nilai");
+  let sheet = ss.getSheetByName("Catat_Nilai");
   if (!sheet) {
-    sheet = ss.insertSheet("catat_nilai");
+    sheet = ss.insertSheet("Catat_Nilai");
     sheet.appendRow([
       "Timestamp", "Kelas", "Semester", "Minggu_Ke", "Mode_Pencatatan",
       "Jenis_Aktivitas", "ID_Siswa", "Nama_Siswa", "Nilai", "Predikat", "Keterangan"
