@@ -87,7 +87,8 @@ function doPost(e) {
     // menabrak alur lama (jasmani.html tidak pernah mengirim field
     // "action", jadi payload lama tetap jatuh ke rute Log_Aktivitas)
     // ------------------------------------------------------------
-    if (!Array.isArray(params) && params.action === "submitNilai") {
+    const action = !Array.isArray(params) ? String(params.action || '').trim().toLowerCase() : '';
+    if (action === "submitnilai") {
       result = simpanCatatNilai(ss, params);
     } else {
       // ------------------------------------------------------------
@@ -144,6 +145,12 @@ function doPost(e) {
 // ------------------------------------------------------------
 function simpanCatatNilai(ss, params) {
   let sheet = ss.getSheetByName("Catat_Nilai");
+  const legacySheet = ss.getSheetByName("catat_nilai");
+  if (!sheet && legacySheet) {
+    legacySheet.setName("Catat_Nilai");
+    sheet = legacySheet;
+  }
+
   if (!sheet) {
     sheet = ss.insertSheet("Catat_Nilai");
     sheet.appendRow([
@@ -172,5 +179,9 @@ function simpanCatatNilai(ss, params) {
     ]);
   });
 
-  return { status: "success", message: records.length + " baris nilai tersimpan." };
+  return {
+    status: "success",
+    sheet: "Catat_Nilai",
+    message: records.length + " baris nilai tersimpan di sheet Catat_Nilai."
+  };
 }

@@ -316,7 +316,7 @@
                 const json = await res.json();
 
                 if (json.status === 'success' || json.result === 'success') {
-                    tampilkanStatus(`Berhasil menyimpan nilai ${records.length} siswa.`, 'success');
+                    tampilkanStatus(json.message || `Berhasil menyimpan nilai ${records.length} siswa ke Catat_Nilai.`, 'success');
                 } else {
                     tampilkanStatus(json.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
                 }
