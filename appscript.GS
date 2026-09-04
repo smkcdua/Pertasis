@@ -87,8 +87,15 @@ function doPost(e) {
     // menabrak alur lama (jasmani.html tidak pernah mengirim field
     // "action", jadi payload lama tetap jatuh ke rute Log_Aktivitas)
     // ------------------------------------------------------------
-    const action = !Array.isArray(params) ? String(params.action || '').trim().toLowerCase() : '';
-    if (action === "submitnilai") {
+    const urlAction = String((e.parameter && e.parameter.action) || '').trim().toLowerCase();
+    const bodyAction = !Array.isArray(params) ? String(params.action || '').trim().toLowerCase() : '';
+    const isNilaiSubmission = !Array.isArray(params) && (
+      urlAction === "submitnilai" ||
+      bodyAction === "submitnilai" ||
+      Array.isArray(params.records)
+    );
+
+    if (isNilaiSubmission) {
       result = simpanCatatNilai(ss, params);
     } else {
       // ------------------------------------------------------------

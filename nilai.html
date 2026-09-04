@@ -309,7 +309,7 @@
 
             tampilkanStatus('Mengirim data...', 'loading');
             try {
-                const res = await fetch(API_URL, {
+                const res = await fetch(`${API_URL}?action=submitNilai`, {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
