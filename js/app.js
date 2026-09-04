@@ -212,7 +212,7 @@ function formatRecordDate(value, options) {
 }
 
 function formatRecordMonth(value) {
-    return formatRecordDate(value, { day: '2-digit', month: 'short', year: 'numeric' });
+    return formatRecordDate(value, { day: '2-digit', month: 'long' });
 }
 
 function getTodayDateLabel() {
@@ -905,6 +905,25 @@ function initHalamanResume() {
         filterMinggu.value = dates.includes(selected) ? selected : '';
     }
 
+    function renderActivityOptions() {
+        if (!filterAktivitas) return;
+        const selected = filterAktivitas.value;
+        const activities = [...new Set(allResumeData
+            .map(rec => String(rec.Jenis_Aktivitas || '').trim())
+            .filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b, 'id'));
+
+        filterAktivitas.innerHTML = '<option value="">Semua Aktivitas</option>';
+        activities.forEach(activity => {
+            const opt = document.createElement('option');
+            opt.value = activity;
+            opt.textContent = activity;
+            filterAktivitas.appendChild(opt);
+        });
+
+        filterAktivitas.value = activities.includes(selected) ? selected : '';
+    }
+
     function getLatestPsychologyRecord(studentName) {
         if (!studentName) return null;
         const records = allResumeData
@@ -1329,20 +1348,27 @@ function initHalamanResume() {
             siswaUnik.forEach((nama, idx) => {
                 const pointInfoData = [];
                 const dataPoint = tanggalSorted.map(dateKey => {
-                    const rec = chartRecords.find(d => d.Nama_Siswa === nama && getRecordDateKey(d.Timestamp) === dateKey);
-                    if (!rec) {
+                    const records = chartRecords.filter(d => d.Nama_Siswa === nama && getRecordDateKey(d.Timestamp) === dateKey);
+                    const metrics = records.map(getMetricInfo).filter(Boolean);
+                    if (metrics.length === 0) {
                         pointInfoData.push({ value: null, display: null });
                         return null;
                     }
 
-                    const metric = getMetricInfo(rec);
+                    const metric = metrics[metrics.length - 1];
+                    const averageValue = metrics.reduce((sum, item) => sum + item.value, 0) / metrics.length;
                     pointInfoData.push({
-                        value: metric ? metric.value : null,
-                        display: metric ? metric.display : null,
-                        mingguKe: normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke),
-                        tanggal: formatRecordDate(rec.Timestamp)
+                        value: averageValue,
+                        display: metrics.length === 1
+                            ? metric.display
+                            : getDisplayValue(averageValue, metric.metricType),
+                        mingguKe: [...new Set(records
+                            .map(rec => normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke))
+                            .filter(Boolean))].join(', '),
+                        tanggal: formatRecordDate(`${dateKey}T00:00:00`),
+                        recordCount: records.length
                     });
-                    return metric ? metric.value : null;
+                    return averageValue;
                 });
 
                 const metricType = chartRecords
@@ -1494,6 +1520,7 @@ function initHalamanResume() {
             computeAndRenderStats();
             renderClassOptions();
             renderStudentOptions();
+            renderActivityOptions();
             renderDateOptions();
             updateObservationSummary(filterSiswa ? filterSiswa.value : '');
             applyFiltersAndRender();
@@ -1596,7 +1623,27 @@ function initHalamanResume() {
 
         filtered.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
 
-        updateChart(filtered);
+        // Grafik tetap menampilkan seluruh riwayat untuk filter utama; tanggal hanya membatasi tabel.
+        const chartData = allResumeData.filter(rec => {
+            if (q) {
+                const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''} ${rec.Jenis_Aktivitas || ''} ${formatRecordDate(rec.Timestamp)}`.toLowerCase();
+                if (!gabungan.includes(q)) return false;
+            }
+
+            if (filterKelas && filterKelas.value && rec._Kelas !== filterKelas.value) return false;
+            if (filterSiswa && filterSiswa.value && rec.Nama_Siswa !== filterSiswa.value) return false;
+
+            if (aktivitasFilter) {
+                const jenis = normalizeActivityName(rec.Jenis_Aktivitas);
+                const filterNorm = normalizeActivityName(aktivitasFilter);
+                if (!jenis.includes(filterNorm)) return false;
+            }
+
+            if (semesterFilter && semesterLabel(rec.Semester) !== semesterFilter) return false;
+            return true;
+        });
+
+        updateChart(chartData);
         renderTable(filtered);
     }
 
