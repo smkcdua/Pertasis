@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catat Nilai - Corduba</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Gaya tambahan khusus halaman ini — silakan pindahkan ke css/style.css bila ingin dipakai global */
+        .nilai-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid #e2e8f0;}
+        .nilai-row:last-child{border-bottom:none;}
+        .nilai-siswa-info{display:flex;flex-direction:column;}
+        .nilai-siswa-info .nama{font-weight:600;color:#1e293b;}
+        .nilai-siswa-info .nis{font-size:0.85rem;color:#94a3b8;}
+        .nilai-input-group{display:flex;align-items:center;gap:8px;}
+        .nilai-input-group input[type="number"]{width:70px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;text-align:center;}
+        .predikat-badge{min-width:28px;text-align:center;padding:4px 8px;border-radius:6px;font-weight:700;font-size:0.85rem;background:#e2e8f0;color:#475569;}
+        .predikat-A{background:#dcfce7;color:#166534;}
+        .predikat-B{background:#dbeafe;color:#1e40af;}
+        .predikat-C{background:#fef9c3;color:#854d0e;}
+        .predikat-D{background:#fee2e2;color:#991b1b;}
+        #statusKirim{margin-top:12px;padding:10px 14px;border-radius:8px;font-weight:600;display:none;}
+        #statusKirim.success{display:block;background:#dcfce7;color:#166534;}
+        #statusKirim.error{display:block;background:#fee2e2;color:#991b1b;}
+        #statusKirim.loading{display:block;background:#e2e8f0;color:#475569;}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="icon-sport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v8H2V8z"></path>
+                    <path d="M6 12h4"></path>
+                </svg>
+                <span>Corduba <strong>Sipundi</strong></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Catat Latihan</a>
+                <a href="catat_nilai.html" class="active">Catat Nilai</a>
+                <a href="psikologi.html">Catat Psikologi</a>
+                <a href="resume.html">Resume Realtime</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Aplikasi Pencatatan Nilai</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div style="color:#334155; font-weight:700;">Waktu sekarang: <span id="currentTimeDisplay">--:--:--</span></div>
+        </div>
+
+        <!-- Form Pengaturan Penilaian -->
+        <div class="form-group-inline">
+            <div class="form-group">
+                <label>Pilih Kelas</label>
+                <select id="selectKelas" required>
+                    <option value="">-- Memuat Data Kelas... --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mode Pencatatan</label>
+                <select id="modePencatatan" required>
+                    <option value="Pengetahuan">Pengetahuan (Kognitif)</option>
+                    <option value="Keterampilan">Keterampilan (Psikomotor)</option>
+                    <option value="Sikap">Sikap (Afektif)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group-inline">
+            <div class="form-group">
+                <label>Jenis Aktivitas</label>
+                <input type="text" id="jenisAktivitas" placeholder="Contoh: Passing Bawah Bola Voli" required>
+            </div>
+            <div class="form-group">
+                <label>Minggu Ke-</label>
+                <input type="text" id="mingguKe" required placeholder="Contoh: Jumat, 14 Agustus 2026">
+            </div>
+            <div class="form-group">
+                <label>Semester</label>
+                <select id="semester" required>
+                    <option value="1">Ganjil</option>
+                    <option value="2">Genap</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Daftar Siswa untuk Penilaian Kolektif -->
+        <div id="pencatatanContainer" style="display: none;">
+            <h3 style="margin-top: 20px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">Daftar Siswa &amp; Nilai</h3>
+            <ul id="listSiswaPencatatan" class="student-list">
+                <!-- Daftar siswa + input nilai dimunculkan oleh JavaScript di sini -->
+            </ul>
+
+            <button id="btnKirimKolektif" class="btn-kirim-kolektif">Kirim Semua Nilai</button>
+            <div id="statusKirim"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // KONFIGURASI
+        // ============================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycby2uB31a8YTqTubf9x8PnR8IqwpM3SBXB07CurMki0CgPN4geWoytAjp4zkHOhHdpWo/exec";
+
+        // Cache daftar siswa (diambil sekali, difilter per kelas di browser —
+        // karena aksi getSiswa di Apps Script Anda mengembalikan SEMUA siswa,
+        // tidak menerima parameter kelas)
+        let semuaSiswaCache = null;
+
+        // ============================================================
+        // JAM BERJALAN
+        // ============================================================
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTimeDisplay').textContent =
+                now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ============================================================
+        // HELPER: cari nilai field kelas di sebuah objek baris, apapun
+        // nama kolomnya persis (Kelas / Nama_kelas / ID_kelas / dst)
+        // ============================================================
+        function ambilFieldKelas(obj) {
+            if (!obj) return '';
+            const kandidat = ['Kelas', 'Nama_kelas', 'ID_kelas', 'kelas', 'nama_kelas', 'id_kelas'];
+            for (const k of kandidat) {
+                if (obj[k] !== undefined && obj[k] !== '') return String(obj[k]).trim();
+            }
+            const key = Object.keys(obj).find(k => k.toLowerCase().includes('kelas'));
+            return key ? String(obj[key]).trim() : '';
+        }
+
+        function labelKelas(obj) {
+            return obj.Nama_kelas || obj.ID_kelas || ambilFieldKelas(obj) || '(tanpa nama)';
+        }
+
+        // ============================================================
+        // AMBIL DAFTAR KELAS (action: getDaftarKelas, sesuai Code.gs)
+        // ============================================================
+        async function muatKelas() {
+            const selectKelas = document.getElementById('selectKelas');
+            try {
+                const res = await fetch(`${API_URL}?action=getDaftarKelas`);
+                const json = await res.json();
+                if (json && json.error) throw new Error(json.error);
+                const daftarKelas = Array.isArray(json) ? json : [];
+
+                selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                daftarKelas.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = labelKelas(k);
+                    opt.textContent = labelKelas(k);
+                    selectKelas.appendChild(opt);
+                });
+            } catch (err) {
+                selectKelas.innerHTML = '<option value="">-- Gagal memuat kelas --</option>';
+                console.error('Gagal memuat kelas:', err);
+            }
+        }
+
+        // ============================================================
+        // AMBIL SEMUA SISWA (action: getSiswa) — di-cache, difilter per kelas
+        // ============================================================
+        async function ambilSemuaSiswa() {
+            if (semuaSiswaCache) return semuaSiswaCache;
+            const res = await fetch(`${API_URL}?action=getSiswa`);
+            const json = await res.json();
+            if (json && json.error) throw new Error(json.error);
+            semuaSiswaCache = Array.isArray(json) ? json : [];
+            return semuaSiswaCache;
+        }
+
+        // ============================================================
+        // TAMPILKAN DAFTAR SISWA SESUAI KELAS TERPILIH
+        // ============================================================
+        async function muatSiswa(kelas) {
+            const list = document.getElementById('listSiswaPencatatan');
+            const container = document.getElementById('pencatatanContainer');
+            list.innerHTML = '<li class="nilai-row">Memuat daftar siswa...</li>';
+            container.style.display = 'block';
+
+            try {
+                const semua = await ambilSemuaSiswa();
+                const siswa = semua.filter(s => ambilFieldKelas(s).toLowerCase() === kelas.toLowerCase());
+
+                if (!siswa.length) {
+                    list.innerHTML = '<li class="nilai-row">Tidak ada siswa yang cocok dengan kelas ini di sheet Daftar_Siswa. Cek nama kolom kelas di sheet tersebut kalau ini seharusnya ada isinya.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                siswa.forEach((s, idx) => {
+                    const nis = s.ID_Siswa || '';
+                    const nama = s.Nama_Siswa || `Siswa ${idx + 1}`;
+
+                    const li = document.createElement('li');
+                    li.className = 'nilai-row';
+                    li.dataset.nis = nis;
+                    li.dataset.nama = nama;
+                    li.innerHTML = `
+                        <div class="nilai-siswa-info">
+                            <span class="nama">${nama}</span>
+                            <span class="nis">${nis}</span>
+                        </div>
+                        <div class="nilai-input-group">
+                            <input type="number" min="0" max="100" placeholder="0-100" class="input-nilai">
+                            <span class="predikat-badge">-</span>
+                        </div>
+                    `;
+                    const input = li.querySelector('.input-nilai');
+                    const badge = li.querySelector('.predikat-badge');
+                    input.addEventListener('input', () => {
+                        const p = hitungPredikat(input.value);
+                        badge.textContent = p || '-';
+                        badge.className = 'predikat-badge' + (p ? ` predikat-${p}` : '');
+                    });
+
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                list.innerHTML = '<li class="nilai-row">Gagal memuat daftar siswa.</li>';
+                console.error('Gagal memuat siswa:', err);
+            }
+        }
+
+        // ============================================================
+        // HITUNG PREDIKAT DARI NILAI ANGKA (bisa disesuaikan skalanya)
+        // ============================================================
+        function hitungPredikat(nilai) {
+            const n = parseFloat(nilai);
+            if (isNaN(n)) return '';
+            if (n >= 90) return 'A';
+            if (n >= 80) return 'B';
+            if (n >= 70) return 'C';
+            return 'D';
+        }
+
+        // ============================================================
+        // KIRIM SEMUA NILAI KE SPREADSHEET (sheet: catat_nilai)
+        // ============================================================
+        async function kirimSemuaNilai() {
+            const statusEl = document.getElementById('statusKirim');
+            const kelas = document.getElementById('selectKelas').value;
+            const mode = document.getElementById('modePencatatan').value;
+            const jenisAktivitas = document.getElementById('jenisAktivitas').value.trim();
+            const mingguKe = document.getElementById('mingguKe').value.trim();
+            const semester = document.getElementById('semester').value;
+
+            if (!kelas || !jenisAktivitas || !mingguKe) {
+                tampilkanStatus('Mohon lengkapi Kelas, Jenis Aktivitas, dan Minggu Ke- terlebih dahulu.', 'error');
+                return;
+            }
+
+            const rows = Array.from(document.querySelectorAll('#listSiswaPencatatan li.nilai-row'));
+            const records = rows.map(li => {
+                const input = li.querySelector('.input-nilai');
+                const nilai = input ? input.value : '';
+                return {
+                    nis: li.dataset.nis || '',
+                    nama: li.dataset.nama || '',
+                    nilai: nilai === '' ? '' : Number(nilai),
+                    predikat: hitungPredikat(nilai)
+                };
+            }).filter(r => r.nilai !== '');
+
+            if (!records.length) {
+                tampilkanStatus('Isi nilai minimal untuk satu siswa sebelum mengirim.', 'error');
+                return;
+            }
+
+            const payload = {
+                action: 'submitNilai',
+                kelas,
+                semester,
+                mingguKe,
+                mode,
+                jenisAktivitas,
+                records
+            };
+
+            tampilkanStatus('Mengirim data...', 'loading');
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (json.status === 'success' || json.result === 'success') {
+                    tampilkanStatus(`Berhasil menyimpan nilai ${records.length} siswa.`, 'success');
+                } else {
+                    tampilkanStatus(json.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
+                }
+            } catch (err) {
+                console.error('Gagal mengirim data:', err);
+                tampilkanStatus('Gagal terhubung ke server. Periksa koneksi internet Anda.', 'error');
+            }
+        }
+
+        function tampilkanStatus(pesan, tipe) {
+            const el = document.getElementById('statusKirim');
+            el.textContent = pesan;
+            el.className = tipe;
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+        document.getElementById('selectKelas').addEventListener('change', (e) => {
+            if (e.target.value) {
+                muatSiswa(e.target.value);
+            } else {
+                document.getElementById('pencatatanContainer').style.display = 'none';
+            }
+        });
+
+        document.getElementById('btnKirimKolektif').addEventListener('click', kirimSemuaNilai);
+
+        // Muat data kelas saat halaman dibuka
+        muatKelas();
+    </script>
+</body>
+<footer class="footer">
+    <p>&copy; 2026 Cardikes. Corduba Keren.</p>
+</footer>
+</html>
