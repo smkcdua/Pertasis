@@ -197,6 +197,24 @@ function formatTanggal(isoString) {
     });
 }
 
+function getRecordDateKey(value) {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function formatRecordDate(value, options) {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString('id-ID', options || {
+        day: '2-digit', month: 'short', year: 'numeric'
+    });
+}
+
+function formatRecordMonth(value) {
+    return formatRecordDate(value, { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
 function getTodayDateLabel() {
     return new Date().toLocaleDateString('id-ID', {
         weekday: 'long',
@@ -870,6 +888,23 @@ function initHalamanResume() {
         }
     }
 
+    function renderDateOptions() {
+        if (!filterMinggu) return;
+        const selected = filterMinggu.value;
+        const dates = [...new Set(allResumeData.map(rec => getRecordDateKey(rec.Timestamp)).filter(Boolean))]
+            .sort((a, b) => new Date(a) - new Date(b));
+
+        filterMinggu.innerHTML = '<option value="">Semua Tanggal</option>';
+        dates.forEach(dateKey => {
+            const opt = document.createElement('option');
+            opt.value = dateKey;
+            opt.textContent = formatRecordDate(`${dateKey}T00:00:00`);
+            filterMinggu.appendChild(opt);
+        });
+
+        filterMinggu.value = dates.includes(selected) ? selected : '';
+    }
+
     function getLatestPsychologyRecord(studentName) {
         if (!studentName) return null;
         const records = allResumeData
@@ -918,6 +953,118 @@ function initHalamanResume() {
         return null;
     }
 
+    // Target operasional untuk tes yang dipakai aplikasi. TKJI nasional memakai
+    // jarak/durasi berbeda, sehingga target ini ditampilkan sebagai pembanding awal.
+    const activityStandards = [
+        { matches: ['lari100m', 'lari100meter'], label: 'Lari 100 m', target: 16000, display: '16,0 detik', lowerIsBetter: true },
+        { matches: ['lari50m', 'lari50meter'], label: 'Lari 50 m', target: 8500, display: '8,5 detik', lowerIsBetter: true },
+        { matches: ['lari1600m', 'lari1600meter'], label: 'Lari 1.600 m', target: 480000, display: '8:00 menit', lowerIsBetter: true },
+        { matches: ['pushup2menit', 'pushupselama2menit', 'pushup120detik'], label: 'Push Up 2 menit', target: 35, display: '35 repetisi', lowerIsBetter: false },
+        { matches: ['situp2menit', 'situpselama2menit', 'situp120detik'], label: 'Sit Up 2 menit', target: 40, display: '40 repetisi', lowerIsBetter: false }
+    ];
+
+    function getActivityStandard(activityName) {
+        const normalized = normalizeActivityName(activityName);
+        return activityStandards.find(standard => standard.matches.some(match => normalized.includes(match))) || null;
+    }
+
+    // Baseline operasional sesuai protokol tes aplikasi (kelas X-XII, L/P).
+    const activityBenchmarks = {
+        lari100m: {
+            label: 'Lari 100 m', unit: 'detik', lowerIsBetter: true,
+            values: { X: { L: 16.5, P: 18.5 }, XI: { L: 16.0, P: 18.0 }, XII: { L: 15.5, P: 17.5 } }
+        },
+        lari50m: {
+            label: 'Lari 50 m', unit: 'detik', lowerIsBetter: true,
+            values: { X: { L: 8.5, P: 9.5 }, XI: { L: 8.3, P: 9.3 }, XII: { L: 8.1, P: 9.1 } }
+        },
+        lari1600m: {
+            label: 'Lari 1.600 m', unit: 'menit', lowerIsBetter: true,
+            values: { X: { L: 8.0, P: 10.0 }, XI: { L: 7.75, P: 9.75 }, XII: { L: 7.5, P: 9.5 } }
+        },
+        pushup: {
+            label: 'Push Up 2 menit', unit: 'repetisi', lowerIsBetter: false,
+            values: { X: { L: 35, P: 20 }, XI: { L: 38, P: 22 }, XII: { L: 40, P: 24 } }
+        },
+        situp: {
+            label: 'Sit Up 2 menit', unit: 'repetisi', lowerIsBetter: false,
+            values: { X: { L: 40, P: 30 }, XI: { L: 43, P: 32 }, XII: { L: 45, P: 35 } }
+        }
+    };
+
+    function getStudentGrade(className) {
+        const normalized = String(className || '').trim().toUpperCase();
+        if (/^(XII|12)(?:\s|$)/.test(normalized)) return 'XII';
+        if (/^(XI|11)(?:\s|$)/.test(normalized)) return 'XI';
+        if (/^(X|10)(?:\s|$)/.test(normalized)) return 'X';
+        return null;
+    }
+
+    function normalizeGender(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (['l', 'lk', 'laki', 'laki-laki', 'pria', 'male'].includes(normalized)) return 'L';
+        if (['p', 'pr', 'perempuan', 'wanita', 'female'].includes(normalized)) return 'P';
+        return null;
+    }
+
+    function getActivityBenchmark(record) {
+        const normalized = normalizeActivityName(record && record.Jenis_Aktivitas);
+        const benchmark = Object.entries(activityBenchmarks).find(([key]) => normalized.includes(key));
+        if (!benchmark) return null;
+        const grade = getStudentGrade(record._Kelas);
+        const gender = normalizeGender(record._JenisKelamin);
+        const target = grade && gender ? benchmark[1].values[grade]?.[gender] : null;
+        if (target === null || target === undefined) return null;
+        const targetValue = benchmark[0].includes('lari')
+            ? (benchmark[0].includes('1600') ? target * 60000 : target * 1000)
+            : target;
+        return { ...benchmark[1], grade, gender, target, targetValue };
+    }
+
+    function formatBenchmarkTarget(benchmark) {
+        if (!benchmark) return '-';
+        if (benchmark.unit === 'detik') return `${benchmark.target.toFixed(1)} detik`;
+        if (benchmark.unit === 'menit') {
+            const minutes = Math.floor(benchmark.target);
+            const seconds = Math.round((benchmark.target - minutes) * 60);
+            return `${minutes}:${String(seconds).padStart(2, '0')} menit`;
+        }
+        return `${benchmark.target} repetisi`;
+    }
+
+    function getBenchmarkComparison(record, value) {
+        const benchmark = getActivityBenchmark(record);
+        if (!benchmark || !value) return '';
+        const difference = benchmark.lowerIsBetter
+            ? value.value - benchmark.targetValue
+            : value.value - benchmark.targetValue;
+        const achieved = benchmark.lowerIsBetter ? difference <= 0 : difference >= 0;
+        const differenceDisplay = benchmark.unit === 'repetisi'
+            ? `${Math.abs(Math.round(difference))} repetisi`
+            : formatSpreadsheetValue(formatTime(Math.abs(difference)));
+        const status = achieved ? 'di atas/sesuai rata-rata' : 'di bawah rata-rata';
+        return `<br><strong>Pembanding ${benchmark.grade} ${benchmark.gender === 'L' ? 'laki-laki' : 'perempuan'}:</strong> ${formatBenchmarkTarget(benchmark)} | <strong>${status}</strong> (selisih ${differenceDisplay}).`;
+    }
+
+    function getGoalComparison(record, value) {
+        const standard = getActivityStandard(record.Jenis_Aktivitas);
+        if (!standard || !value) return '';
+
+        const achieved = standard.lowerIsBetter ? value.value <= standard.target : value.value >= standard.target;
+        const status = achieved ? 'target tercapai' : 'perlu mengejar target';
+        const gap = standard.lowerIsBetter
+            ? Math.max(0, value.value - standard.target)
+            : Math.max(0, standard.target - value.value);
+        const gapDisplay = standard.lowerIsBetter
+            ? formatSpreadsheetValue(formatTime(gap))
+            : `${Math.round(gap)} repetisi`;
+        const advice = achieved
+            ? 'Pertahankan dan tingkatkan secara bertahap.'
+            : `Goal berikutnya: ${standard.display} (selisih ${gapDisplay}).`;
+
+        return `<br><strong>Target SMA:</strong> ${standard.display} | <strong>${status}</strong>. ${advice}`;
+    }
+
     function getActivityTrendSummary(studentName) {
         const records = allResumeData
             .filter(rec => rec.Nama_Siswa === studentName)
@@ -952,8 +1099,9 @@ function initHalamanResume() {
             const statusText = better ? 'lebih baik' : 'lebih buruk';
             const actionText = better ? 'Pertahankan pola latihan ini.' : 'Perkuat latihan dan konsistensi pada aktivitas ini.';
             const shortName = activityName || 'Aktivitas';
+            const goalComparison = getGoalComparison(latest, latestValue);
 
-            summaries.push(`• <strong>${escapeHtml(shortName)}</strong>: ${escapeHtml(currentDisplay)} vs ${escapeHtml(previousDisplay)} (<strong>${statusText}</strong>). Saran: <strong>${actionText}</strong>`);
+            summaries.push(`• <strong>${escapeHtml(shortName)}</strong>: ${escapeHtml(currentDisplay)} vs ${escapeHtml(previousDisplay)} (<strong>${statusText}</strong>). Saran: <strong>${actionText}</strong>${goalComparison}`);
         });
 
         return summaries.join('<br>');
@@ -973,7 +1121,10 @@ function initHalamanResume() {
 
         const latest = records[0];
         const latestTrendString = getActivityTrendSummary(studentName);
-        const summaryHeader = latest ? `<strong>${escapeHtml(latest.Jenis_Aktivitas || 'Aktivitas')}</strong> terakhir: ${escapeHtml(formatSpreadsheetValue(latest.Hasil))}` : 'Belum ada catatan.';
+        const latestValue = getComparableActivityValue(latest);
+        const latestGoal = latest && latestValue ? getGoalComparison(latest, latestValue) : '';
+        const latestBenchmark = latest && latestValue ? getBenchmarkComparison(latest, latestValue) : '';
+        const summaryHeader = latest ? `<strong>${escapeHtml(latest.Jenis_Aktivitas || 'Aktivitas')}</strong> terakhir: ${escapeHtml(formatSpreadsheetValue(latest.Hasil))}${latestBenchmark || latestGoal}` : 'Belum ada catatan.';
 
         if (latest) {
             observationSummaryCard.style.display = 'block';
@@ -994,14 +1145,9 @@ function initHalamanResume() {
 
         const pertemuanMap = buildPertemuanNumberMap(data);
         const getMeetingNumber = rec => getPertemuanNumber(rec, pertemuanMap);
-
-        const mingguSet = new Set();
-        data.forEach(d => {
-            const m = getMeetingNumber(d);
-            if (Number.isFinite(m)) mingguSet.add(m);
-        });
-        const mingguSorted = Array.from(mingguSet).sort((a, b) => a - b);
-        const labels = mingguSorted.map(m => String(m));
+        const tanggalSet = new Set(data.map(rec => getRecordDateKey(rec.Timestamp)).filter(Boolean));
+        const tanggalSorted = Array.from(tanggalSet).sort((a, b) => new Date(a) - new Date(b));
+        const labels = tanggalSorted.map(dateKey => formatRecordMonth(`${dateKey}T00:00:00`));
 
         const selectedActivity = filterAktivitas.value;
         const modeChart = chartModeSelect ? chartModeSelect.value : 'rata-rata';
@@ -1117,8 +1263,8 @@ function initHalamanResume() {
             if (activityGroups.size === 0) {
                 datasets.push({
                     label: 'Tidak ada data',
-                    data: Array(mingguSorted.length || 1).fill(null),
-                    pointInfo: Array(mingguSorted.length || 1).fill({ value: null, display: '-' }),
+                    data: Array(tanggalSorted.length || 1).fill(null),
+                    pointInfo: Array(tanggalSorted.length || 1).fill({ value: null, display: '-' }),
                     borderColor: '#94a3b8',
                     backgroundColor: 'rgba(148, 163, 184, 0.1)',
                     borderWidth: 2,
@@ -1131,8 +1277,8 @@ function initHalamanResume() {
                 activityGroups.forEach((groupRecords, activityName) => {
                     const metricTypeByGroup = getMetricInfo(groupRecords[0])?.metricType || 'number';
                     const pointInfoData = [];
-                    const dataPoint = mingguSorted.map(m => {
-                        const recs = groupRecords.filter(d => getMeetingNumber(d) === m);
+                    const dataPoint = tanggalSorted.map(dateKey => {
+                        const recs = groupRecords.filter(d => getRecordDateKey(d.Timestamp) === dateKey);
                         if (recs.length === 0) {
                             pointInfoData.push({ value: null, display: null });
                             return null;
@@ -1155,7 +1301,8 @@ function initHalamanResume() {
                         pointInfoData.push({
                             value: avgValue,
                             display: getDisplayValue(avgValue, metricTypeByGroup),
-                            mingguKe: mingguValues.join(', ')
+                            mingguKe: mingguValues.join(', '),
+                            tanggal: formatRecordDate(`${dateKey}T00:00:00`)
                         });
                         return avgValue;
                     });
@@ -1181,8 +1328,8 @@ function initHalamanResume() {
 
             siswaUnik.forEach((nama, idx) => {
                 const pointInfoData = [];
-                const dataPoint = mingguSorted.map(m => {
-                    const rec = chartRecords.find(d => d.Nama_Siswa === nama && getMeetingNumber(d) === m);
+                const dataPoint = tanggalSorted.map(dateKey => {
+                    const rec = chartRecords.find(d => d.Nama_Siswa === nama && getRecordDateKey(d.Timestamp) === dateKey);
                     if (!rec) {
                         pointInfoData.push({ value: null, display: null });
                         return null;
@@ -1192,7 +1339,8 @@ function initHalamanResume() {
                     pointInfoData.push({
                         value: metric ? metric.value : null,
                         display: metric ? metric.display : null,
-                        mingguKe: normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke)
+                        mingguKe: normalizePertemuanValue(rec.Minggu_Ke ?? rec.minggu_ke ?? rec.Pertemuan_Ke ?? rec.pertemuan_ke),
+                        tanggal: formatRecordDate(rec.Timestamp)
                     });
                     return metric ? metric.value : null;
                 });
@@ -1248,7 +1396,11 @@ function initHalamanResume() {
                             },
                             afterLabel: function(context) {
                                 const pointInfo = context.dataset?.pointInfo?.[context.dataIndex];
-                                return pointInfo?.mingguKe ? `Minggu ke: ${pointInfo.mingguKe}` : '';
+                                if (!pointInfo) return '';
+                                const details = [];
+                                if (pointInfo.tanggal) details.push(`Tanggal: ${pointInfo.tanggal}`);
+                                if (pointInfo.mingguKe) details.push(`Pertemuan ke: ${pointInfo.mingguKe}`);
+                                return details.join(' | ');
                             }
                         }
                     }
@@ -1322,20 +1474,27 @@ function initHalamanResume() {
 
             // Peta ID_Siswa -> Kelas, dipakai untuk pencarian "nama atau kelas"
             const kelasMap = {};
+            const genderMap = {};
             (siswaData || []).forEach(s => {
-                if (s.ID_Siswa) kelasMap[String(s.ID_Siswa)] = String(s.Kelas || '').trim();
+                if (s.ID_Siswa) {
+                    const id = String(s.ID_Siswa);
+                    kelasMap[id] = String(s.Kelas || '').trim();
+                    genderMap[id] = String(s.Jenis_Kelamin || '').trim();
+                }
             });
 
             allResumeData = (logData || [])
                 .filter(rec => rec.Nama_Siswa) // buang baris rusak/kosong
                 .map(rec => ({
                     ...rec,
-                    _Kelas: kelasMap[String(rec.ID_Siswa)] || ''
+                    _Kelas: kelasMap[String(rec.ID_Siswa)] || '',
+                    _JenisKelamin: genderMap[String(rec.ID_Siswa)] || ''
                 }));
 
             computeAndRenderStats();
             renderClassOptions();
             renderStudentOptions();
+            renderDateOptions();
             updateObservationSummary(filterSiswa ? filterSiswa.value : '');
             applyFiltersAndRender();
 
@@ -1401,13 +1560,12 @@ function initHalamanResume() {
     function applyFiltersAndRender() {
         const q = filterSearch.value.trim().toLowerCase();
         const aktivitasFilter = filterAktivitas.value;
-        const mingguFilter = filterMinggu.value;
+        const tanggalFilter = filterMinggu.value;
         const semesterFilter = filterSemester.value;
-        const pertemuanMap = buildPertemuanNumberMap(allResumeData);
 
         let filtered = allResumeData.filter(rec => {
             if (q) {
-                const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''} ${rec.Jenis_Aktivitas || ''}`.toLowerCase();
+                const gabungan = `${rec.Nama_Siswa || ''} ${rec._Kelas || ''} ${rec.Jenis_Aktivitas || ''} ${formatRecordDate(rec.Timestamp)}`.toLowerCase();
                 if (!gabungan.includes(q)) return false;
             }
 
@@ -1425,9 +1583,8 @@ function initHalamanResume() {
                 if (!jenis.includes(filterNorm)) return false;
             }
 
-            if (mingguFilter) {
-                const nomor = Number(String(mingguFilter).trim());
-                if (!Number.isFinite(nomor) || getPertemuanNumber(rec, pertemuanMap) !== nomor) return false;
+            if (tanggalFilter) {
+                if (getRecordDateKey(rec.Timestamp) !== tanggalFilter) return false;
             }
 
             if (semesterFilter) {
@@ -1451,8 +1608,9 @@ function initHalamanResume() {
         }
 
         tbody.innerHTML = data.map((rec, idx) => {
-            const pertemuanKe = getPertemuanNumber(rec, buildPertemuanNumberMap(allResumeData));
-            const periode = `Pertemuan ke ${Number.isFinite(pertemuanKe) ? pertemuanKe : (rec.Minggu_Ke || '-')} &middot; ${semesterLabel(rec.Semester)}`;
+            const pertemuanMap = buildPertemuanNumberMap(allResumeData);
+            const pertemuanKe = getPertemuanNumber(rec, pertemuanMap);
+            const periode = `${formatRecordDate(rec.Timestamp)} &middot; Pertemuan ke ${Number.isFinite(pertemuanKe) ? pertemuanKe : (rec.Minggu_Ke || '-')} &middot; ${semesterLabel(rec.Semester)}`;
             const kelasSedang = getCurrentClasses();
             const inClassNow = kelasSedang.includes(rec._Kelas) ? 'Ya' : '';
             return `
