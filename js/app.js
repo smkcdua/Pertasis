@@ -197,14 +197,44 @@ function formatTanggal(isoString) {
     });
 }
 
+function parseAppDate(value) {
+    if (value instanceof Date) return value;
+    const raw = String(value || '').trim();
+    if (!raw) return new Date(NaN);
+
+    const monthNames = {
+        januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
+        juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
+    };
+    const indonesianDate = raw.match(/(?:^|,\s*)(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/i);
+    if (indonesianDate) {
+        const month = monthNames[indonesianDate[2].toLowerCase()];
+        if (month !== undefined) return new Date(Number(indonesianDate[3]), month, Number(indonesianDate[1]));
+    }
+
+    return new Date(raw);
+}
+
 function getRecordDateKey(value) {
-    const date = new Date(value);
+    const date = parseAppDate(value);
     if (isNaN(date.getTime())) return '';
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+function getAssessmentDateValue(record) {
+    if (!record) return '';
+    const sessionDate = record.Minggu_Ke ?? record.minggu_ke ?? record.Pertemuan_Ke ?? record.pertemuan_ke;
+    const parsedSessionDate = parseAppDate(sessionDate);
+    if (sessionDate && !isNaN(parsedSessionDate.getTime())) return sessionDate;
+    return record.Timestamp || '';
+}
+
+function getAssessmentDateKey(record) {
+    return getRecordDateKey(getAssessmentDateValue(record));
+}
+
 function formatRecordDate(value, options) {
-    const date = new Date(value);
+    const date = parseAppDate(value);
     if (isNaN(date.getTime())) return '-';
     return date.toLocaleDateString('id-ID', options || {
         day: '2-digit', month: 'short', year: 'numeric'
@@ -891,7 +921,7 @@ function initHalamanResume() {
     function renderDateOptions() {
         if (!filterMinggu) return;
         const selected = filterMinggu.value;
-        const dates = [...new Set(allResumeData.map(rec => getRecordDateKey(rec.Timestamp)).filter(Boolean))]
+        const dates = [...new Set(allResumeData.map(getAssessmentDateKey).filter(Boolean))]
             .sort((a, b) => new Date(a) - new Date(b));
 
         filterMinggu.innerHTML = '<option value="">Semua Tanggal</option>';
@@ -1164,7 +1194,7 @@ function initHalamanResume() {
 
         const pertemuanMap = buildPertemuanNumberMap(data);
         const getMeetingNumber = rec => getPertemuanNumber(rec, pertemuanMap);
-        const tanggalSet = new Set(data.map(rec => getRecordDateKey(rec.Timestamp)).filter(Boolean));
+        const tanggalSet = new Set(data.map(getAssessmentDateKey).filter(Boolean));
         const tanggalSorted = Array.from(tanggalSet).sort((a, b) => new Date(a) - new Date(b));
         const labels = tanggalSorted.map(dateKey => formatRecordMonth(`${dateKey}T00:00:00`));
 
@@ -1297,7 +1327,7 @@ function initHalamanResume() {
                     const metricTypeByGroup = getMetricInfo(groupRecords[0])?.metricType || 'number';
                     const pointInfoData = [];
                     const dataPoint = tanggalSorted.map(dateKey => {
-                        const recs = groupRecords.filter(d => getRecordDateKey(d.Timestamp) === dateKey);
+                        const recs = groupRecords.filter(d => getAssessmentDateKey(d) === dateKey);
                         if (recs.length === 0) {
                             pointInfoData.push({ value: null, display: null });
                             return null;
@@ -1348,7 +1378,7 @@ function initHalamanResume() {
             siswaUnik.forEach((nama, idx) => {
                 const pointInfoData = [];
                 const dataPoint = tanggalSorted.map(dateKey => {
-                    const records = chartRecords.filter(d => d.Nama_Siswa === nama && getRecordDateKey(d.Timestamp) === dateKey);
+                    const records = chartRecords.filter(d => d.Nama_Siswa === nama && getAssessmentDateKey(d) === dateKey);
                     const metrics = records.map(getMetricInfo).filter(Boolean);
                     if (metrics.length === 0) {
                         pointInfoData.push({ value: null, display: null });
@@ -1611,7 +1641,7 @@ function initHalamanResume() {
             }
 
             if (tanggalFilter) {
-                if (getRecordDateKey(rec.Timestamp) !== tanggalFilter) return false;
+                if (getAssessmentDateKey(rec) !== tanggalFilter) return false;
             }
 
             if (semesterFilter) {

@@ -1,2 +1,8 @@
 nilai vertikal pada kurva psikologi nilai yang tertera adalah  q1, 12, q3, q4 rubah menjadi  skor dari 0-20, dan hasil yang dihitung sebagai nilai anak di kurva adalah skornmya saja, misal 15/20 berarti nilainya 15 yang tertera di kurva
 app.js, pertasis.GS, resume.html
+kirim ke github
+git add .
+git commit -m "Update proyek Pertasis"
+git push
+ambil dari github
+git pull
