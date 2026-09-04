@@ -50,6 +50,10 @@
         <h2>Aplikasi Pencatatan Nilai</h2>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <div style="color:#334155; font-weight:700;">Waktu sekarang: <span id="currentTimeDisplay">--:--:--</span></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                <div style="color:#64748b;">Kelas hari ini: <span id="currentClassesDisplayIndex">-</span></div>
+                <div style="color:#94a3b8; font-size:0.95rem; margin-top:4px;">Jam: <span id="currentClassesTimesIndex">-</span></div>
+            </div>
         </div>
 
         <!-- Form Pengaturan Penilaian -->
@@ -144,6 +148,39 @@
         setInterval(updateClock, 1000);
         updateClock();
         setCurrentAssessmentDate();
+
+        async function updateTodayClasses() {
+            const classDisplay = document.getElementById('currentClassesDisplayIndex');
+            const timeDisplay = document.getElementById('currentClassesTimesIndex');
+            const dayNames = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+            const today = dayNames[new Date().getDay()];
+
+            try {
+                const response = await fetch(`${API_URL}?action=getDaftarKelas`);
+                const schedule = await response.json();
+                const classesToday = (Array.isArray(schedule) ? schedule : [])
+                    .filter(item => String(item.Hari || item.hari || '').toLowerCase().includes(today))
+                    .map(item => ({
+                        nama: item.Nama_kelas || item.Nama_Kelas || item.nama_kelas || item.ID_kelas || item.id_kelas || '',
+                        jam: item.Jam || item.jam || item.time || ''
+                    }))
+                    .filter(item => item.nama);
+
+                classDisplay.textContent = classesToday.length
+                    ? classesToday.map(item => item.nama).join(', ')
+                    : '-';
+                timeDisplay.textContent = classesToday.length
+                    ? classesToday.map(item => item.jam ? `${item.nama} (${item.jam})` : item.nama).join(' • ')
+                    : '-';
+            } catch (error) {
+                classDisplay.textContent = '-';
+                timeDisplay.textContent = '-';
+                console.error('Gagal memuat jadwal kelas:', error);
+            }
+        }
+
+        updateTodayClasses();
+        setInterval(updateTodayClasses, 60000);
 
         // ============================================================
         // HELPER: cari nilai field kelas di sebuah objek baris, apapun
