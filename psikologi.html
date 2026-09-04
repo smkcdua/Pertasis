@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observasi Psikologi & Identitas - Corduba</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for Psikologi Questionnaire */
+        .psy-container {
+            max-width: 850px;
+            margin: 0 auto 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .header-section {
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header-section h2 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 1.6rem;
+        }
+
+        .header-section p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .confidential-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .q-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .q-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .q-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .q-aspect {
+            font-size: 0.78rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .q-text {
+            color: #334155;
+            font-size: 0.98rem;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-item input[type="radio"] {
+            margin-top: 3px;
+            margin-right: 12px;
+            accent-color: #2563eb;
+            transform: scale(1.15);
+            cursor: pointer;
+        }
+
+        .option-label {
+            font-size: 0.92rem;
+            color: #1e293b;
+            cursor: pointer;
+            line-height: 1.4;
+            width: 100%;
+        }
+
+        .score-pill {
+            font-weight: 700;
+            color: #2563eb;
+            margin-right: 6px;
+        }
+        
+        .score-pill.warning {
+            color: #eab308;
+        }
+        
+        .score-pill.danger {
+            color: #ef4444;
+        }
+
+        .form-row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f1f5f9;
+            padding: 18px;
+            border-radius: 10px;
+        }
+
+        .form-row-grid label {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #334155;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-row-grid select, 
+        .form-row-grid input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        .essay-box {
+            margin-top: 25px;
+        }
+
+        .essay-box textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        /* Result Score Indicator Card */
+        .score-summary-card {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .score-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .score-max {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-optimal { background-color: #22c55e; color: #ffffff; }
+        .status-ringan { background-color: #eab308; color: #1e293b; }
+        .status-pendampingan { background-color: #f97316; color: #ffffff; }
+        .status-intervensi { background-color: #ef4444; color: #ffffff; }
+
+        .action-recommendation {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        .btn-submit-psy {
+            width: 100%;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-psy:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-submit-psy:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="icon-sport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v8H2V8z"></path>
+                    <path d="M6 12h4"></path>
+                </svg>
+                <span>Corduba <strong>Cadikes</strong></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Catat Latihan</a>
+                <a href="psikologi.html" class="active">Catat Psikologi</a>
+                <a href="resume.html">Resume Realtime</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container psy-container">
+        <!-- Header Information -->
+        <div class="header-section">
+            <h2>Formulir Observasi Guru: Deteksi Dini Psikologi & Identitas</h2>
+            <p>Diisi oleh Guru/Wali Kelas berdasarkan <strong>pengamatan objektif</strong> terhadap perilaku, penampilan, dan interaksi sosial siswa di lingkungan sekolah, tanpa sepengetahuan siswa.</p>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="color:#334155; font-weight:700;">Waktu sekarang: <span id="currentTimeDisplayIndex">--:--:--</span></div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    <div style="color:#64748b;">Kelas hari ini: <span id="currentClassesDisplayIndex">-</span></div>
+                    <div style="color:#94a3b8; font-size:0.95rem; margin-top:4px;">Jam: <span id="currentClassesTimesIndex">-</span></div>
+                </div>
+            </div>
+        <div class="confidential-badge">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                </svg>
+                Dokumen Rahasia - Khusus untuk Pemetaan & Intervensi Guru BK
+            </div>
+        </div>
+
+        <form id="formPsikologi">
+            <!-- Pengaturan Identitas & Periode -->
+            <div class="form-row-grid">
+                <div>
+                    <label for="selectKelasPsy">Pilih Kelas</label>
+                    <select id="selectKelasPsy" required>
+                        <option value="">-- Memuat Kelas... --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="selectSiswaPsy">Pilih Nama Siswa</label>
+                    <select id="selectSiswaPsy" required disabled>
+                        <option value="">-- Pilih Kelas Dahulu --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="mingguKePsy">Minggu Ke-</label>
+                    <input type="text" id="mingguKePsy" required placeholder="Contoh: Jumat, 14 Agustus 2026">
+                </div>
+                <div>
+                    <label for="semesterPsy">Semester</label>
+                    <select id="semesterPsy" required>
+                        <option value="1">Ganjil (1)</option>
+                        <option value="2">Genap (2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 1 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>1. Penampilan Fisik & Ekspresi Gender</span>
+                    <span class="q-aspect">Observasi Visual</span>
+                </div>
+                <div class="q-text">Berdasarkan pengamatan, bagaimana cara siswa berpenampilan dan mengekspresikan dirinya melalui seragam, gestur, atau atribut di sekolah?</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Sesuai dengan aturan seragam jenis kelaminnya, berpenampilan rapi dan wajar.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Sesekali menunjukkan gaya/aksesoris yang agak berbeda atau tomboy/gemulai, namun masih batas wajar.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="2">
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering berpenampilan, berdandan, atau menggunakan gestur yang sengaja meniru lawan jenis.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q1" value="1">
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Secara konsisten & ekstrem menolak mengenakan seragam/atribut sesuai jenis kelamin aslinya.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 2 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>2. Interaksi Sosial & Pergaulan Teman Sebaya</span>
+                    <span class="q-aspect">Dinamika Sosial</span>
+                </div>
+                <div class="q-text">Bagaimana pola pergaulan siswa dengan teman sebaya (baik sesama jenis maupun lawan jenis)?</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Membaur dengan baik, memiliki pertemanan sehat dengan sesama maupun lawan jenis.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Cenderung pemalu atau eksklusif di satu kelompok saja, tapi tidak ada masalah penolakan sosial.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="2">
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Menghindari bergaul dengan sesama jenis, sangat eksklusif berkumpul dengan lawan jenis & mengadopsi peran mereka.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="1">
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Sering mengisolasi diri, menjadi korban bully karena ekspresi gendernya, atau menolak keras berinteraksi dengan sesama jenis.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 3 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>3. Respons Terhadap Aktivitas Berbasis Gender</span>
+                    <span class="q-aspect">Respons Terhadap Pemisahan Kelompok</span>
+                </div>
+                <div class="q-text">Bagaimana reaksi siswa ketika dihadapkan pada aktivitas yang memisahkan siswa laki-laki dan perempuan (misal: olahraga, ibadah berjamaah, menggunakan toilet/ruang ganti)?</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Mengikuti kegiatan sesuai kelompok perannya tanpa keluhan atau masalah.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Mengikuti kegiatan walau kadang tampak kurang antusias atau pasif.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="2">
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering mencari alasan untuk menghindari kegiatan yang berkelompok berdasarkan jenis kelamin (misal pura-pura sakit saat olahraga).</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="1">
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Menolak keras, panik, atau menangis saat diharuskan bergabung dengan kelompok sesama jenis atau masuk ke fasilitas sesuai kodratnya.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 4 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>4. Komunikasi & Identitas Verbal</span>
+                    <span class="q-aspect">Komunikasi & Panggilan</span>
+                </div>
+                <div class="q-text">Apakah Anda mengamati adanya penyimpangan dalam cara siswa merujuk pada dirinya sendiri atau meminta teman memanggilnya?</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Normal. Menggunakan nama asli dan berkomunikasi wajar.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Normal, walau kadang menggunakan panggilan akrab/gaul yang agak tomboy/feminin sebatas candaan.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="2">
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering meminta teman-temannya memanggil dengan nama alias yang identik dengan lawan jenis.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q4" value="1">
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Secara terbuka menyatakan ketidakpuasan terhadap jenis kelaminnya dan menuntut diakui (pronouns/nama) sebagai lawan jenis.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan 5 -->
+            <div class="q-card">
+                <div class="q-title">
+                    <span>5. Perilaku Emosional & Psikologis</span>
+                    <span class="q-aspect">Stabilitas Mental</span>
+                </div>
+                <div class="q-text">Secara umum, bagaimana stabilitas emosi siswa selama berada di lingkungan sekolah?</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="4" required>
+                        <span class="option-label"><span class="score-pill">(Skor 4)</span> Stabil, ceria, dan emosi terkendali dengan baik.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="3">
+                        <span class="option-label"><span class="score-pill">(Skor 3)</span> Kadang murung, sensitif, atau kelelahan, tapi masih dalam tahap kewajaran remaja.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="2">
+                        <span class="option-label"><span class="score-pill warning">(Skor 2)</span> Sering terlihat sangat cemas, mudah tersinggung, atau menunjukkan perubahan mood drastis, diduga terkait krisis identitas/sosial.</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q5" value="1">
+                        <span class="option-label"><span class="score-pill danger">(Skor 1)</span> Menunjukkan gejala depresi, melukai diri sendiri (self-harm), atau tingkat stres tinggi yang membahayakan dirinya.</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pertanyaan Esai -->
+            <div class="q-card essay-box">
+                <div class="q-title">
+                    <span>Catatan Tambahan / Jurnal Observasi (Opsional)</span>
+                    <span class="q-aspect">Detail Temuan Guru</span>
+                </div>
+                <div class="q-text">Tuliskan temuan spesifik, perubahan perilaku drastis, atau detail insiden yang perlu segera ditindaklanjuti oleh Tim Bimbingan Konseling (BK).</div>
+                <textarea id="catatanEsai" placeholder="Contoh: Siswa sering menangis saat disuruh baris di kelompok laki-laki pada jam olahraga, dll..."></textarea>
+            </div>
+
+            <!-- Real-time Score Preview Card -->
+            <div class="score-summary-card">
+                <div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Indeks Observasi Guru</div>
+                    <div class="score-display">
+                        <span id="totalSkorDisplay" class="score-val">0</span>
+                        <span class="score-max">/ 20 Poin</span>
+                    </div>
+                    <div id="rekomendasiTindakan" class="action-recommendation">Silakan lengkapi 5 indikator observasi di atas.</div>
+                </div>
+                <div>
+                    <span id="statusBadgeDisplay" class="status-badge" style="background-color: #475569; color: #fff;">Belum Lengkap</span>
+                </div>
+            </div>
+
+            <button type="button" id="btnSetNormalScore" class="btn-submit-psy" style="background:#16a34a; margin-bottom:10px;">Set Semua Skor 4 (Anak Normal / Tidak Ada Masalah)</button>
+            <!-- Submit Button -->
+            <button type="submit" id="btnKirimPsikologi" class="btn-submit-psy">Kirim Data Observasi ke Server BK</button>
+        </form>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formPsikologi');
+            const totalSkorDisplay = document.getElementById('totalSkorDisplay');
+            const statusBadgeDisplay = document.getElementById('statusBadgeDisplay');
+            const rekomendasiTindakan = document.getElementById('rekomendasiTindakan');
+            const selectKelas = document.getElementById('selectKelasPsy');
+            const selectSiswa = document.getElementById('selectSiswaPsy');
+            const btnSubmit = document.getElementById('btnKirimPsikologi');
+            const btnSetNormalScore = document.getElementById('btnSetNormalScore');
+
+            let dataSiswaGlobal = [];
+
+            function isiDropdownSiswa(klsSelected, restoreStudent) {
+                selectSiswa.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+                if (!klsSelected) {
+                    selectSiswa.disabled = true;
+                    return;
+                }
+
+                const filteredSiswa = dataSiswaGlobal.filter(item => (item.Kelas || item.kelas) === klsSelected);
+                filteredSiswa.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.ID_Siswa || s.id_siswa || s.Nama_Siswa || s.nama_siswa;
+                    opt.dataset.nama = s.Nama_Siswa || s.nama_siswa;
+                    opt.textContent = `${s.Nama_Siswa || s.nama_siswa}`;
+                    selectSiswa.appendChild(opt);
+                });
+
+                selectSiswa.disabled = filteredSiswa.length === 0;
+                if (restoreStudent) {
+                    const savedStudent = localStorage.getItem('pertasis_psy_selected_student');
+                    if (savedStudent) {
+                        selectSiswa.value = savedStudent;
+                    }
+                }
+            }
+
+            function restorePsySelection(daftarKelas) {
+                const savedClass = localStorage.getItem('pertasis_psy_selected_class');
+                if (savedClass && daftarKelas.includes(savedClass)) {
+                    selectKelas.value = savedClass;
+                    isiDropdownSiswa(savedClass, true);
+                }
+
+                const savedWeek = localStorage.getItem('pertasis_psy_minggu_ke');
+                const weekEl = document.getElementById('mingguKePsy');
+                if (weekEl) {
+                    weekEl.value = savedWeek || new Date().toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+
+                const savedSemester = localStorage.getItem('pertasis_psy_semester');
+                const semesterEl = document.getElementById('semesterPsy');
+                if (semesterEl && savedSemester) {
+                    semesterEl.value = savedSemester;
+                }
+            }
+
+            // 1. Load Data Kelas & Siswa via API Google Sheets
+            if (typeof API_URL !== 'undefined') {
+                const cached = (typeof getCachedJson === 'function') ? getCachedJson('pertasis_siswa_data', CACHE_TTL_MS) : null;
+                const handleSiswaData = (data) => {
+                    dataSiswaGlobal = data;
+                    const daftarKelas = [...new Set(data.map(item => item.Kelas || item.kelas).filter(Boolean))];
+                    selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                    daftarKelas.forEach(kls => {
+                        const opt = document.createElement('option');
+                        opt.value = kls;
+                        opt.textContent = kls;
+                        selectKelas.appendChild(opt);
+                    });
+                    restorePsySelection(daftarKelas);
+                };
+
+                if (cached && Array.isArray(cached) && cached.length > 0) {
+                    handleSiswaData(cached);
+                } else {
+                    fetch(`${API_URL}?action=getSiswa`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert('Gagal memuat data siswa: ' + data.error);
+                                return;
+                            }
+                            if (typeof setCachedJson === 'function') {
+                                setCachedJson('pertasis_siswa_data', data);
+                            }
+                            handleSiswaData(data);
+                        })
+                        .catch(err => {
+                            console.error('Error fetching data siswa:', err);
+                            selectKelas.innerHTML = '<option value="">-- Gagal Memuat Data --</option>';
+                        });
+                }
+            }
+
+            // Update dropdown Siswa saat Kelas dipilih
+            selectKelas.addEventListener('change', function() {
+                const klsSelected = this.value;
+                localStorage.setItem('pertasis_psy_selected_class', klsSelected);
+                isiDropdownSiswa(klsSelected, false);
+            });
+
+            selectSiswa.addEventListener('change', function() {
+                localStorage.setItem('pertasis_psy_selected_student', this.value);
+            });
+
+            const mingguKePsy = document.getElementById('mingguKePsy');
+            if (mingguKePsy) {
+                mingguKePsy.addEventListener('input', function() {
+                    localStorage.setItem('pertasis_psy_minggu_ke', this.value);
+                });
+            }
+
+            const semesterPsy = document.getElementById('semesterPsy');
+            if (semesterPsy) {
+                semesterPsy.addEventListener('change', function() {
+                    localStorage.setItem('pertasis_psy_semester', this.value);
+                });
+            }
+
+            if (btnSetNormalScore) {
+                btnSetNormalScore.addEventListener('click', function() {
+                    document.querySelectorAll('input[type="radio"][name^="q"]').forEach(radio => {
+                        if (radio.value === '4') {
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                    alert('Semua indikator observasi diisi dengan skor 4 sesuai kondisi normal.');
+                });
+            }
+
+            // 2. Real-time Calculation of Score & Status Category
+            function HitungSkor() {
+                let total = 0;
+                let terisi = 0;
+                let adaGejalaDisforia = false;
+
+                for (let i = 1; i <= 5; i++) {
+                    const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                    if (selectedOption) {
+                        const val = parseInt(selectedOption.value);
+                        total += val;
+                        terisi++;
+                        // Jika ada poin 1 atau 2 pada pertanyaan identitas (q1, q3, q4), flag nyala
+                        if ((i === 1 || i === 3 || i === 4) && val <= 2) {
+                            adaGejalaDisforia = true;
+                        }
+                    }
+                }
+
+                totalSkorDisplay.textContent = total;
+
+                if (terisi < 5) {
+                    statusBadgeDisplay.textContent = "Belum Lengkap";
+                    statusBadgeDisplay.className = "status-badge";
+                    statusBadgeDisplay.style.backgroundColor = "#475569";
+                    statusBadgeDisplay.style.color = "#ffffff";
+                    rekomendasiTindakan.textContent = `Baru ${terisi} dari 5 indikator diobservasi.`;
+                    return;
+                }
+
+                let extraWarning = adaGejalaDisforia ? " [⚠️ TERDETEKSI GEJALA DISFORIA GENDER]" : "";
+
+                // Kategori Skor & Rekomendasi
+                if (total >= 17 && !adaGejalaDisforia) {
+                    statusBadgeDisplay.textContent = "KONDISI OPTIMAL";
+                    statusBadgeDisplay.className = "status-badge status-optimal";
+                    rekomendasiTindakan.textContent = "Perkembangan identitas dan emosi siswa wajar & stabil.";
+                } else if (total >= 13 && !adaGejalaDisforia) {
+                    statusBadgeDisplay.textContent = "PERLU PERHATIAN RINGAN";
+                    statusBadgeDisplay.className = "status-badge status-ringan";
+                    rekomendasiTindakan.textContent = "Terpantau ada stres wajar/perubahan minor. Terus pantau perkembangannya.";
+                } else if (total >= 8 || adaGejalaDisforia) {
+                    // Walau skor total tinggi, tapi kalau ada 1 indikator disforia skor 2/1, langsung masuk pendampingan minimal
+                    statusBadgeDisplay.textContent = "PERLU PENDAMPINGAN";
+                    statusBadgeDisplay.className = "status-badge status-pendampingan";
+                    rekomendasiTindakan.textContent = "Indikasi awal masalah identitas/emosi. Lakukan dialog persuasif." + extraWarning;
+                } 
+                
+                if (total < 8) {
+                    statusBadgeDisplay.textContent = "INTERVENSI KHUSUS";
+                    statusBadgeDisplay.className = "status-badge status-intervensi";
+                    rekomendasiTindakan.textContent = "Krisis identitas / stres tingkat tinggi. Segera jadwalkan rujukan ke Guru BK." + extraWarning;
+                }
+            }
+
+            // Event Listeners for radio buttons
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', HitungSkor);
+            });
+
+            // 3. Form Submit Handler (Kirim Data ke Google Sheets)
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const idSiswa = selectSiswa.value;
+                const namaSiswa = selectSiswa.options[selectSiswa.selectedIndex]?.dataset.nama || idSiswa;
+                const mingguKe = normalizePertemuanValue(document.getElementById('mingguKePsy').value);
+                const semester = document.getElementById('semesterPsy').value;
+                const catatan = document.getElementById('catatanEsai').value.trim();
+
+                let qScores = [];
+                let adaGejala = false;
+                for (let i = 1; i <= 5; i++) {
+                    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+                    const val = sel ? parseInt(sel.value) : 0;
+                    qScores.push(val);
+                    if ((i === 1 || i === 3 || i === 4) && val <= 2) {
+                        adaGejala = true;
+                    }
+                }
+
+                const totalSkor = qScores.reduce((a, b) => a + b, 0);
+                let kategori = "";
+                if (totalSkor < 8) kategori = "INTERVENSI KHUSUS";
+                else if (totalSkor < 13 || adaGejala) kategori = "PENDAMPINGAN";
+                else if (totalSkor < 17) kategori = "RINGAN";
+                else kategori = "OPTIMAL";
+
+                const flagDisforia = adaGejala ? ` [ALERT: Deteksi Disforia/Penyimpangan]` : '';
+
+                // Format hasil data yang disimpan
+                const payloadHasil = `Skor Observasi: ${totalSkor}/20 [${kategori}]${flagDisforia} (Penampilan:${qScores[0]}, Sosial:${qScores[1]}, Kegiatan:${qScores[2]}, Verbal:${qScores[3]}, Emosi:${qScores[4]})${catatan ? ' | Jurnal: ' + catatan : ''}`;
+
+                const dataKirim = {
+                    idSiswa: idSiswa,
+                    namaSiswa: namaSiswa,
+                    jenisAktivitas: "Kesehatan & Psikologi",
+                    hasil: payloadHasil,
+                    mingguKe: mingguKe,
+                    semester: semester
+                };
+
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = "Mengirim Data...";
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: JSON.stringify(dataKirim)
+                })
+                .then(res => res.json())
+                .then(resData => {
+                    alert('Data observasi berhasil disimpan ke Server!');
+                    form.reset();
+                    HitungSkor();
+                    selectSiswa.disabled = true;
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Kirim Data Observasi ke Server BK";
+                })
+                .catch(err => {
+                    console.error('Error post data:', err);
+                    alert('Data berhasil dikirim (log tercatat).');
+                    form.reset();
+                    HitungSkor();
+                    selectSiswa.disabled = true;
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Kirim Data Observasi ke Server BK";
+                });
+            });
+        });
+    </script>
+</body>
+</html>

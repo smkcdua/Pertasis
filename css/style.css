@@ -1,0 +1,204 @@
+/* Dasar Styling */
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f4f7f6; padding: 20px; color: #333; margin: 0; }
+.container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+h2 { text-align: center; color: #2c3e50; margin-top: 0; }
+
+/* ==========================================================
+   STYLING GRAFIK / KURVA (Chart.js)
+   ========================================================== */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.chart-container {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+@media (max-width: 700px) {
+    .chart-container {
+        height: 250px;
+    }
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .chart-header .form-group {
+        width: 100%;
+    }
+}
+
+/* Form Elements */
+.form-group { margin-bottom: 15px; }
+.form-group-inline { display: flex; gap: 15px; margin-bottom: 15px; }
+.form-group-inline .form-group { flex: 1; margin-bottom: 0; }
+label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+
+/* Stopwatch Styling */
+.stopwatch-container { text-align: center; margin: 25px 0; padding: 20px; background: #ecf0f1; border-radius: 8px; }
+.time-display { font-size: 48px; font-weight: bold; font-family: monospace; color: #2c3e50; margin-bottom: 15px; }
+.stopwatch-controls button { padding: 10px 20px; margin: 0 5px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; font-size: 14px; transition: 0.2s; }
+.btn-start { background-color: #27ae60; }
+.btn-start:hover { background-color: #2ecc71; }
+.btn-stop { background-color: #e74c3c; }
+.btn-stop:hover { background-color: #c0392b; }
+.btn-reset { background-color: #95a5a6; }
+.btn-reset:hover { background-color: #7f8c8d; }
+
+/* Styling Pencatatan Kolektif */
+.student-list { list-style: none; padding: 0; margin-top: 15px; }
+.student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #ddd; background-color: #fcfcfc; margin-bottom: 5px; border-radius: 4px; transition: 0.2s; }
+.student-item:hover { background-color: #f1f2f6; }
+.student-info { flex-grow: 1; font-weight: 500; font-size: 15px; }
+.student-action { display: flex; gap: 15px; align-items: center; }
+.recorded-time { font-weight: bold; color: #2c3e50; min-width: 80px; text-align: right; font-family: monospace; font-size: 16px; }
+
+/* Tombol Catat Waktu */
+.btn-catat { background-color: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+.btn-catat:hover { background-color: #e67e22; }
+
+/* Input Repetisi (Push-Up / Sit-Up) */
+.input-repetisi { width: 80px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold; color: #2c3e50; }
+.input-repetisi:focus { outline: none; border-color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
+
+/* Tombol Kirim */
+.btn-kirim-kolektif { width: 100%; background-color: #27ae60; color: white; border: none; margin-top: 20px; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+.btn-kirim-kolektif:hover { background-color: #2ecc71; }
+.btn-kirim-kolektif:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+/* ==========================================================
+   HALAMAN RESUME DASHBOARD (resume.html)
+   Mengikuti palet warna yang sama dengan halaman pencatatan:
+   navy #2c3e50, biru #3498db, hijau #27ae60, oranye #e67e22/#f39c12
+   ========================================================== */
+
+/* Navbar */
+.navbar { background-color: #2c3e50; padding: 0 20px; margin: -20px -20px 20px -20px; }
+.nav-container { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 0; gap: 10px; }
+.logo { display: flex; align-items: center; gap: 8px; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 18px; letter-spacing: 0.5px; }
+.logo strong { color: #3498db; }
+.icon-sport { width: 24px; height: 24px; color: #3498db; }
+.nav-links { display: flex; gap: 22px; }
+.nav-links a { color: #bdc3c7; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 4px; border-bottom: 2px solid transparent; transition: 0.2s; }
+.nav-links a:hover { color: #fff; }
+.nav-links a.active { color: #fff; border-bottom-color: #3498db; }
+
+/* Dashboard Header */
+.dashboard-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
+.dashboard-header h1 { margin: 0 0 4px 0; font-size: 22px; color: #2c3e50; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
+.dashboard-header p { margin: 0; color: #7f8c8d; font-size: 14px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: none; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; }
+.btn-primary { background-color: #3498db; color: #fff; }
+.btn-primary:hover { background-color: #2980b9; }
+.btn-primary:disabled { background-color: #95a5a6; cursor: not-allowed; }
+.btn-export { background-color: #16805b; color: #fff; }
+.btn-export:hover { background-color: #126b4c; }
+.btn-icon { width: 16px; height: 16px; }
+.btn-primary.is-loading .btn-icon { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Quick Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+.stats-card { background: #fff; border-radius: 8px; padding: 18px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.06); }
+.stats-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.stats-icon svg { width: 20px; height: 20px; }
+.bg-blue-tint { background-color: #eaf4fc; color: #2f80c7; }
+.bg-yellow-tint { background-color: #fdf3d9; color: #d4a017; }
+.bg-green-tint { background-color: #e8f8ee; color: #27ae60; }
+.bg-orange-tint { background-color: #fdece0; color: #e67e22; }
+.stats-info { min-width: 0; }
+.stats-label { display: block; font-size: 12px; color: #7f8c8d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+.stats-value { font-family: 'Share Tech Mono', monospace; font-size: 24px; font-weight: bold; color: #2c3e50; margin: 0; line-height: 1.1; }
+.stats-sub { margin: 4px 0 0 0; font-size: 13px; color: #95a5a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#observation-summary-card {
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+#observation-summary-card .stats-sub {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.65;
+    margin: 0;
+}
+
+#observation-summary-card .summary-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#observation-summary-card p {
+    margin: 0;
+}
+
+.observation-reference-note {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.5;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+}
+
+/* Generic Card */
+.card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.06); margin-bottom: 20px; }
+.card-title-sm { margin: 0 0 14px 0; font-size: 14px; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; }
+
+/* Filter Row */
+.filter-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.filter-row .form-group { flex: 1; min-width: 150px; margin-bottom: 0; }
+.filter-row .form-group.flex-grow { flex: 2; min-width: 200px; }
+.filter-row input, .filter-row select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+
+/* Table */
+.table-container { overflow-x: auto; }
+#resume-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+#resume-table thead th { text-align: left; background-color: #f4f7f6; color: #2c3e50; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; padding: 12px 10px; border-bottom: 2px solid #e0e4e3; white-space: nowrap; }
+#resume-table tbody td { padding: 12px 10px; border-bottom: 1px solid #edf1f0; color: #333; vertical-align: middle; }
+#resume-table tbody tr:hover { background-color: #f9fbfa; }
+#resume-table .mono-cell { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: #2c3e50; }
+.text-center { text-align: center; }
+.py-8 { padding-top: 32px; padding-bottom: 32px; }
+.text-muted { color: #95a5a6; }
+.table-info-footer { margin-top: 12px; font-size: 13px; color: #95a5a6; text-align: right; }
+
+/* Footer */
+.footer { max-width: 800px; margin: 0 auto; text-align: center; padding: 20px 0; color: #95a5a6; font-size: 13px; }
+
+/* Responsif */
+@media (max-width: 700px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .filter-row .form-group, .filter-row .form-group.flex-grow { flex: 1 1 100%; }
+    .dashboard-header { flex-direction: column; align-items: stretch; }
+    .dashboard-header .btn { width: 100%; justify-content: center; }
+}
+
+@media print {
+    body { background: #fff; padding: 0; }
+    .navbar, .footer, .dashboard-header, .stats-grid, .filter-card,
+    .summary-card, .chart-card, .table-card { display: none !important; }
+}
+
+@media (max-width: 420px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+    #observation-summary-card { padding: 18px; }
+}
+
+@media (max-width: 420px) {
+    #observation-summary-card { padding: 16px; }
+    #observation-summary-card .summary-header { gap: 6px; }
+}

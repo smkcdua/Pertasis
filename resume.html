@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corduba - Cadikes</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="icon-sport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v8H2V8z"></path>
+                    <path d="M6 12h4"></path>
+                </svg>
+                <span>Corduba <strong>Cardikes</strong></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Catat Latihan</a>
+                <a href="psikologi.html">Catat Psikologi</a>
+                <a href="resume.html" class="active">Resume Realtime</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <main class="container">
+        <!-- Header Dashboard -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Dashboard Resume Siswa</h1>
+                <p>Rekap Realtime</p>
+            </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button class="btn btn-primary" id="btn-refresh-data">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                    Segarkan Data
+                </button>
+                <button class="btn btn-export" id="btn-export-pdf" type="button">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <path d="M14 2v6h6M8 13h8M8 17h6"></path>
+                    </svg>
+                    Export Laporan PDF
+                </button>
+                <button class="btn btn-danger" id="btn-clear-local-cache" type="button" style="background:#dc2626; color:#fff; border:none;">
+                    Hapus Cache Lokal
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats Cards Grid -->
+        <div class="stats-grid" style="display: none;">
+    <div class="stats-card">
+        <div class="stats-icon bg-blue-tint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9M3 20h9M12 4V2M12 12V6M12 18v-2"></path>
+            </svg>
+        </div>
+        <div class="stats-info">
+            <span class="stats-label">Total Sesi Latihan</span>
+            <h3 class="stats-value" id="stat-total-records">0</h3>
+        </div>
+    </div>
+</div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-yellow-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Lari Tercepat</span>
+                    <h3 class="stats-value" id="stat-best-running">--:--.--</h3>
+                    <p class="stats-sub" id="stat-best-running-name">-</p>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-green-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 15h-2v2h2v-2zM8 15H6v2h2v-2zM13 11h-2v4h2v-4z"></path>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Push Up</span>
+                    <h3 class="stats-value" id="stat-best-pushup">0</h3>
+                    <p class="stats-sub" id="stat-best-pushup-name">-</p>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-icon bg-orange-tint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    </svg>
+                </div>
+                <div class="stats-info">
+                    <span class="stats-label">Rekor Sit Up</span>
+                    <h3 class="stats-value" id="stat-best-situp">0</h3>
+                    <p class="stats-sub" id="stat-best-situp-name">-</p>
+                </div>
+            </div>
+        </div>
+
+
+      
+
+        <!-- Filter Controls Card -->
+        <section class="card filter-card">
+            <h2 class="card-title-sm">Filter & Pencarian</h2>
+            <div class="filter-row">
+                <div class="form-group flex-grow">
+                    <input type="text" id="filter-search" placeholder="Cari nama siswa, kelas, atau aktivitas...">
+                </div>
+                <div class="form-group">
+                    <select id="filter-kelas">
+                        <option value="">Pilih Kelas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-siswa">
+                        <option value="">Pilih Nama Siswa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-aktivitas">
+                        <option value="">Semua Aktivitas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-minggu">
+                        <option value="">Semua Tanggal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filter-semester">
+                        <option value="">Semua Semester</option>
+                        <option value="Ganjil">Ganjil</option>
+                        <option value="Genap">Genap</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="card summary-card" id="observation-summary-card" style="display:none; margin-bottom: 20px;">
+            <div class="summary-header">
+                <h2 class="card-title-sm">Index Observasi Guru</h2>
+                <p id="observation-summary-text" class="stats-sub">Pilih Nama Siswa.</p>
+                <p class="observation-reference-note">Pembanding adalah rata-rata operasional siswa SMA per tingkat dan jenis kelamin untuk protokol tes aplikasi; bukan norma nasional tunggal atau diagnosis kebugaran.</p>
+            </div>
+        </section>
+
+          <section class="card chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2 class="card-title-sm">Kurva Perkembangan</h2>
+                    <p class="stats-sub">Menampilkan tren siswa</p>
+                </div>
+                <div class="form-group" style="min-width: 180px; margin-bottom: 0;">
+                    <select id="chart-mode">
+                        <option value="rata-rata">Rata-rata Semua Siswa</option>
+                        <option value="individu">Siswa Terpilih</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="fitnessChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Table Display Area -->
+        <section class="card table-card" style="display: none;">
+            <div class="table-container">
+                <table id="resume-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal Rekam</th>
+                            <th>Nama Siswa</th>
+                            <th>Aktivitas</th>
+                            <th>Hasil Latihan</th>
+                            <th>Jadwal Sekarang</th>
+                            <th>Periode</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resume-table-body">
+                        <!-- Dimuat secara dinamis via JavaScript -->
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-muted">Memuat data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-info-footer" id="table-entries-info">
+                Menampilkan 0 data.
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Cardikes. Corduba Keren.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
